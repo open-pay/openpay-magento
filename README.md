@@ -4,7 +4,7 @@ Magento - Openpay Module
 What's new?
 ---------------
 May 14
-- Creation and modification of customers in Openpay
+- Customer management
 
 April 14
 - Charges with debit/credit cards
