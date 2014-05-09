@@ -1,4 +1,0 @@
-"Openpay Creation Date","Fecha de Pago OpenPay"
-"Payment from Magento Store","Pago desde tu tienda de Magento"
-"Credit card type is not allowed for this payment method.","Esta marca de tarjetas de crédito no la acepta OpenPay."
-"Your checkout form is sending sensitive information to the server. Please contact your developer to fix this security leak.","El formulario de pago está mandando información sensible a tu servidor. Esta información puede ser interceptada con facilidad, contacta al administador del sitio para más información."

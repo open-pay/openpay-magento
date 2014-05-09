@@ -1,0 +1,7 @@
+app/code/local/Openpay/                                         app/code/local/Openpay/
+app/design/frontend/base/default/template/openpay/              app/design/frontend/base/default/template/openpay/
+app/design/frontend/default/default/layout/openpay_charges.xml  app/design/frontend/default/default/layout/openpay_charges.xml
+app/etc/modules/Openpay_Charges.xml                             app/etc/modules/Openpay_Charges.xml
+app/locale/en_US/Openpay_Charges.csv                            app/locale/en_US/Openpay_Charges.csv
+app/locale/es_MX/Openpay_Charges.csv                            app/locale/es_MX/Openpay_Charges.csv
+lib/Openpay/                                                    lib/Openpay/
