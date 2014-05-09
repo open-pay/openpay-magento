@@ -29,6 +29,9 @@ class OpenpayCharge extends OpenpayApiResourceBase {
 		}
 	}
 
+    /*
+     * array(amount, transacción)
+     */
 	public function capture($params) {
 		$resource = $this->derivedResources['captures'];
 		if ($resource) {
