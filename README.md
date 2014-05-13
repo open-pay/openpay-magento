@@ -3,12 +3,12 @@ Magento - Openpay Module
 
 What's new?
 ---------------
-May 14
+May 14 (v.1.1)
 - Customer management
 - Authorization and capture
 - Refund integration
 
-April 14
+April 14 (v.1.0)
 - Charges with debit/credit cards
 - Added fraud tool
 
