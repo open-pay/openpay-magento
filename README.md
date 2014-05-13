@@ -5,6 +5,8 @@ What's new?
 ---------------
 May 14
 - Customer management
+- Authorization and capture
+- Refund integration
 
 April 14
 - Charges with debit/credit cards
