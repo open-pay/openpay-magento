@@ -304,6 +304,7 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
             'last_name' => $customer->lastname,
             'email' => $customer->email,
             'phone_number' => $shippingAddress->telephone,
+            'requires_account' => false,
             'address' => array(
                 'line1' => $shippingAddress->street,
                 'postal_code' => $shippingAddress->postcode,
