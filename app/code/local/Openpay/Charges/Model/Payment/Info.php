@@ -18,7 +18,7 @@ class Openpay_Charges_Model_Payment_Info extends Mage_Payment_Model_Info
     public function getData($key='', $index=null)
     {
         if('openpay_token'===$key){
-            $this->_data['openpay_token'] = $this->getCcToken()
+            $this->_data['openpay_token'] = $this->getCcToken();
         }
         return parent::getData($key, $index);
     }

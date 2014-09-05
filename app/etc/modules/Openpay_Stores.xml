@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <Openpay_Stores>
+            <active>true</active>
+            <codePool>local</codePool>
+            <version>0.1.0</version>
+            <depends>
+                <Mage_Payment />
+            </depends>
+        </Openpay_Stores>
+    </modules>
+</config>

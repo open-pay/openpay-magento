@@ -1,10 +1,5 @@
 <?xml version="1.0"?>
 <config>
-    <modules>
-        <Openpay_Charges>
-            <version>0.1.1</version>
-        </Openpay_Charges>
-    </modules>
     <global>
         <resources>
             <charges_setup>
@@ -21,11 +16,6 @@
             <charges>
                 <class>Openpay_Charges_Model</class>
             </charges>
-            <payment>
-                <rewrite>
-                    <info>Openpay_Charges_Model_Payment_Info</info>
-                </rewrite>
-            </payment>
             <customer>
                 <rewrite>
                     <entity_setup>Openpay_Charges_Model_Customer_Entity_Setup</entity_setup>
@@ -46,11 +36,6 @@
                     <html_head>Openpay_Charges_Block_Page_Html_Head</html_head>
                 </rewrite>
             </page>
-            <payment>
-                <rewrite>
-                    <info_ccsave>Openpay_Charges_Block_Payment_Info_Ccsave</info_ccsave>
-                </rewrite>
-            </payment>
         </blocks>
         <payment>
             <groups>
@@ -82,14 +67,6 @@
             </customer_account>
         </fieldsets>
         <events>
-            <sales_order_payment_place_start>
-                <observers>
-                    <charges>
-                        <class>charges/observer</class>
-                        <method>processOpenpayTransaction</method>
-                    </charges>
-                </observers>
-            </sales_order_payment_place_start>
             <customer_address_save_after>
                 <observers>
                     <charges>
@@ -111,7 +88,7 @@
     <frontend>
         <layout>
             <updates>
-                <openpay_charges module="Openpay_Charges">
+                <openpay_charges>
                     <file>openpay_charges.xml</file>
                 </openpay_charges>
             </updates>

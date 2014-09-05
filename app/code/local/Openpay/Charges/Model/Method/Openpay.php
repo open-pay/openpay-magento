@@ -231,7 +231,7 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
      */
     protected function _setOpenpayObject(){
         /* Create OpenPay object */
-        $this->_openpay = Openpay::getInstance(Mage::getStoreConfig('payment/charges/merchantid'), Mage::getStoreConfig('payment/charges/privatekey'));
+        $this->_openpay = Openpay::getInstance(Mage::getStoreConfig('payment/common/merchantid'), Mage::getStoreConfig('payment/common/privatekey'));
     }
 
     /**

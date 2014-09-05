@@ -194,9 +194,9 @@
         // if payment used is openpay
         if(payment.lastUsedMethod == '<?php echo $_code ?>'){
             checkout.setLoadWaiting('payment');
-            OpenPay.setId('<?php echo Mage::getStoreConfig('payment/charges/merchantid');?>');
-            OpenPay.setApiKey('<?php echo Mage::getStoreConfig('payment/charges/publickey');?>');
-            <?php if(Mage::getStoreConfig('payment/charges/sandbox')):?>OpenPay.setSandboxMode(true);<?php endif;?>
+            OpenPay.setId('<?php echo Mage::getStoreConfig('payment/common/merchantid');?>');
+            OpenPay.setApiKey('<?php echo Mage::getStoreConfig('payment/common/publickey');?>');
+            <?php if(Mage::getStoreConfig('payment/common/sandbox')):?>OpenPay.setSandboxMode(true);<?php endif;?>
             <?php $_billingInfo = Mage::getSingleton('checkout/session')->getQuote()->getBillingAddress()->getData();?>
             var expiration_year = document.getElementById('<?php echo $_code ?>_expiration_yr').value.toString();
             OpenPay.token.create({

@@ -65,7 +65,7 @@ class Openpay_Charges_Model_Observer{
      */
     protected function _setOpenpayObject(){
         /* Create OpenPay object */
-        $this->_openpay = Openpay::getInstance(Mage::getStoreConfig('payment/charges/merchantid'), Mage::getStoreConfig('payment/charges/privatekey'));
+        $this->_openpay = Openpay::getInstance(Mage::getStoreConfig('payment/common/merchantid'), Mage::getStoreConfig('payment/common/privatekey'));
     }
 
 }

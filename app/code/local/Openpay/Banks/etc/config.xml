@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+
+<config>
+    <!-- declare default configuration values for this module -->
+    <default>
+        <!-- 'payment' configuration section (tab) -->
+        <payment>
+            <!-- 'newmodule' configuration group (fieldset) -->
+            <banks>
+                <!-- by default this payment method is inactive -->
+                <active>1</active>
+                <!-- model to handle logic for this payment method -->
+                <model>banks/method_banks</model>
+                <!-- order status for new orders paid by this payment method -->
+                <order_status>pending</order_status>
+
+                <!-- default title for payment checkout page and order view page -->
+                <title>OpenPay Bank Transfer</title>
+                <payment_action>pending_payment</payment_action>
+                <allowspecific>0</allowspecific>
+            </banks>
+        </payment>
+    </default>
+    <frontend>
+        <routers>
+            <banks>
+                <use>standard</use>
+                <args>
+                    <module>Openpay_Banks</module>
+                    <frontName>banks</frontName>
+                </args>
+            </banks>
+        </routers>
+    </frontend>
+    <global>
+        <!-- IMPORTANT: if you use your own namespace (i.e. CompanyName) you also have to declare blocks group for new module. See topic: http://www.magentocommerce.com/boards/viewthread/22416/#t102732 -->
+        <blocks>
+            <banks>
+                <class>Openpay_Banks_Block</class>
+            </banks>
+        </blocks>
+        <!-- declare model group for new module -->
+        <models>
+            <!-- model group alias to be used in Mage::getModel('newmodule/...') -->
+            <banks>
+                <!-- base class name for the model group -->
+                <class>Openpay_Banks_Model</class>
+            </banks>
+        </models>
+        <resources>
+            <banks_setup>
+                <setup>
+                    <module>Openpay_Banks</module>
+                    <class>Openpay_Banks_Model_Resource_Mysql4_Setup</class>
+                </setup>
+                <connection>
+                    <use>core_setup</use>
+                </connection>
+            </banks_setup>
+        </resources>
+        <events>
+            <checkout_onepage_controller_success_action>
+                <observers>
+                    <banks>
+                        <class>banks/observer</class>
+                        <method>checkoutOnepageControllerSuccessAction</method>
+                    </banks>
+                </observers>
+            </checkout_onepage_controller_success_action>
+        </events>
+    </global>
+</config>
