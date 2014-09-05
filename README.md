@@ -3,6 +3,10 @@ Magento - Openpay Module
 
 What's new?
 ---------------
+Sep 14 (v.2.0)
+- Added module for Store Charges
+- Added module for Banks Charges
+
 May 14 (v.1.1)
 - Customer management
 - Authorization and capture
