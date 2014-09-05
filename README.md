@@ -44,8 +44,27 @@ Install with [modman](https://github.com/colinmollenhour/modman)
 Configuration
 --------------
 1. Go to **System > Configuration > Sales > Payment Methods**. Select Openpay.
-2. Choose Enable = YES
-3. Set your PUBLIC_KEY, MERCHANT_ID, PRIVATE_KEY (Get this values from the dashboard)
-4. Choose the credit card types allowed
+3. Set your PUBLIC_KEY, MERCHANT_ID, PRIVATE_KEY (Get this values from the dashboard) on "Openpay Common Resources" section.
+![magento configuration](https://s3.amazonaws.com/images.openpay/magento-config.png)
+4. Enable the payment methods that you want to have
 5. Save your config
+
+Payment Notifications (Stores and Banks)
+--------------------
+For receive payment notifications at the moment the pay was done, you need to configure a webhook notification in the Openpay Dashboard.
+
+**Note:** Configure one webhook for store and other for bank.
+
+1.- Go to "Configuraciones" -> "Agregar Webhook" and configure the URL and the events
+
+    For Store
+    http://mymagento-store.com/stores/payments/confirm
+    For Bank
+    http://mymagento-store.com/banks/payments/confirm
+    
+    Select "Personalizar Eventos" and check all the options in "Cargos" section.
+![webhook configuration](https://s3.amazonaws.com/images.openpay/webhook_configuration.png)
+
+2.- You will receive a verification code in your magento store, to see your code go to "Openpay Common Resources" and copy it. Use this code to verify your webhook in the Openpay Dashboard.
+
 
