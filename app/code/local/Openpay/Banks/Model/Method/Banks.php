@@ -77,6 +77,7 @@ class Openpay_Banks_Model_Method_Banks extends Mage_Payment_Model_Method_Abstrac
     protected function _setOpenpayObject(){
         /* Create OpenPay object */
         $this->_openpay = Openpay::getInstance(Mage::getStoreConfig('payment/common/merchantid'), Mage::getStoreConfig('payment/common/privatekey'));
+         Openpay::setProductionMode(!Mage::getStoreConfig('payment/common/sandbox'));
     }
 
     protected function _doOpenpayTransaction(Varien_Object $payment, $amount){

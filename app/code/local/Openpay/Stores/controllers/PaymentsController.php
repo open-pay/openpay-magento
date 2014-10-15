@@ -41,7 +41,7 @@ class Openpay_Stores_PaymentsController extends Mage_Core_Controller_Front_Actio
             $charge = $op_customer->charges->get($order->getPayment()->openpay_payment_id);
         }
 
-        if(strtotime($charge->due_date) < time()){
+        if(isset($charge->due_date) && !trim($charge->due_date)==='' && strtotime($charge->due_date) < time()){
             throw new Exception('This payment sheet has expired, please place a new order');
         }
         $this->loadLayout();
@@ -129,6 +129,7 @@ class Openpay_Stores_PaymentsController extends Mage_Core_Controller_Front_Actio
     protected function _setOpenpayObject(){
         /* Create OpenPay object */
         $this->_openpay = Openpay::getInstance(Mage::getStoreConfig('payment/common/merchantid'), Mage::getStoreConfig('payment/common/privatekey'));
+         Openpay::setProductionMode(!Mage::getStoreConfig('payment/common/sandbox'));
     }
 
     protected function _userIsCurrentUser($user_id){
