@@ -42,11 +42,10 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
      * @return  Mage_Payment_Model_Info
      */
     public function assignData($data)
-    {
+    {  
         if (is_array($data)) {
             $data = new Varien_Object($data);
         }
-
         try {
             $paymentRequest = Mage::app()->getRequest()->getPost('payment');
             $data->addData(array(
@@ -217,15 +216,15 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
                     break;
             }
         } catch (OpenpayApiTransactionError $e) {
-            Mage::throwException(Mage::helper('paygate')->__('La tarjeta fue declinada, por favor verifique la información o intente con otra tarjeta'));
+            Mage::throwException(Mage::helper('payment')->__('La tarjeta fue declinada, por favor verifique la información o intente con otra tarjeta'));
         } catch (OpenpayApiRequestError $e) {
-           Mage::throwException(Mage::helper('paygate')->__($e->getMessage()));
+           Mage::throwException(Mage::helper('payment')->__($e->getMessage()));
         } catch (OpenpayApiConnectionError $e) {
-            Mage::throwException(Mage::helper('paygate')->__($e->getMessage()));
+            Mage::throwException(Mage::helper('payment')->__($e->getMessage()));
         } catch (OpenpayApiAuthError $e) {
-            Mage::throwException(Mage::helper('paygate')->__($e->getMessage()));
+            Mage::throwException(Mage::helper('payment')->__($e->getMessage()));
         } catch (OpenpayApiError $e) {
-            Mage::throwException(Mage::helper('paygate')->__($e->getMessage()));
+            Mage::throwException(Mage::helper('payment')->__($e->getMessage()));
         }
 
         // Set Openpay confirmation number as Order_Payment openpay_token
