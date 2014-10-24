@@ -137,8 +137,7 @@ class Openpay_Banks_Model_Method_Banks extends Mage_Payment_Model_Method_Abstrac
         $chargeData = array(
             'method' => 'bank_account', 
             'amount' => (float) $amount,
-            'description' => Mage::app()->getStore()->getName() . ' Magento Store: '
-                .$this->_getHelper()->__($orderFirstItem->getName())
+            'description' => $this->_getHelper()->__($orderFirstItem->getName())
                 .(($numItems>1)?$this->_getHelper()->__('... and (%d) other items', $numItems-1): ''),
             'order_id' => $order->getIncrementId(),
 
@@ -197,8 +196,7 @@ class Openpay_Banks_Model_Method_Banks extends Mage_Payment_Model_Method_Abstrac
         $chargeData = array(
             'method' => 'bank_account',
             'amount' => $amount,
-            'description' => Mage::app()->getStore()->getName() . ' Magento Store: '
-                .$this->_getHelper()->__($orderFirstItem->getName())
+            'description' => $this->_getHelper()->__($orderFirstItem->getName())
                 .(($numItems>1)?$this->_getHelper()->__('... and (%d) other items', $numItems-1): ''),
             'order_id' => $order->getIncrementId(),
         );

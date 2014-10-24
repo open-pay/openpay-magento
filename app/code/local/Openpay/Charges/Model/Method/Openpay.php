@@ -188,33 +188,44 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
         $token = $paymentRequest['openpay_token'];
         $device_session_id = $paymentRequest['device_session_id'];
 
-        switch ($checkout_method){
-            case Mage_Sales_Model_Quote::CHECKOUT_METHOD_GUEST:
-                $charge = $this->_chargeCardInOpenpay($payment, $amount, $token, $device_session_id, $capture);
-                break;
+        try {
+            switch ($checkout_method){
+                case Mage_Sales_Model_Quote::CHECKOUT_METHOD_GUEST:
+                    $charge = $this->_chargeCardInOpenpay($payment, $amount, $token, $device_session_id, $capture);
+                    break;
 
-            case Mage_Sales_Model_Quote::CHECKOUT_METHOD_LOGIN_IN:
-                // get the user, if no user create, then add payment
-                $customer = $payment->getOrder()->getCustomer();
-                $shippingAddress = $payment->getOrder()->getShippingAddress();
+                case Mage_Sales_Model_Quote::CHECKOUT_METHOD_LOGIN_IN:
+                    // get the user, if no user create, then add payment
+                    $customer = $payment->getOrder()->getCustomer();
+                    $shippingAddress = $payment->getOrder()->getShippingAddress();
 
-                if (!$customer->openpay_user_id) {
-                    // create OpenPay customer
-                    $openpay_user = $this->_createOpenpayCustomer($customer, $shippingAddress);
-                    $customer->setOpenpayUserId($openpay_user->id);
-                    $customer->save();
+                    if (!$customer->openpay_user_id) {
+                        // create OpenPay customer
+                        $openpay_user = $this->_createOpenpayCustomer($customer, $shippingAddress);
+                        $customer->setOpenpayUserId($openpay_user->id);
+                        $customer->save();
 
-                    $charge = $this->_chargeOpenpayCustomer($payment, $amount, $token, $openpay_user->id, $device_session_id, $capture);
-                }else{
-                    $openpay_user = $this->_getOpenpayCustomer($customer->openpay_user_id);
-                    $charge = $this->_chargeOpenpayCustomer($payment, $amount, $token, $openpay_user->id, $device_session_id, $capture);
-                }
-                break;
+                        $charge = $this->_chargeOpenpayCustomer($payment, $amount, $token, $openpay_user->id, $device_session_id, $capture);
+                    }else{
+                        $openpay_user = $this->_getOpenpayCustomer($customer->openpay_user_id);
+                        $charge = $this->_chargeOpenpayCustomer($payment, $amount, $token, $openpay_user->id, $device_session_id, $capture);
+                    }
+                    break;
 
-            default:
-                $charge = $this->_chargeCardInOpenpay($payment, $amount, $token, $device_session_id, $capture);
-                break;
-
+                default:
+                    $charge = $this->_chargeCardInOpenpay($payment, $amount, $token, $device_session_id, $capture);
+                    break;
+            }
+        } catch (OpenpayApiTransactionError $e) {
+            Mage::throwException(Mage::helper('paygate')->__('La tarjeta fue declinada, por favor verifique la información o intente con otra tarjeta'));
+        } catch (OpenpayApiRequestError $e) {
+           Mage::throwException(Mage::helper('paygate')->__($e->getMessage()));
+        } catch (OpenpayApiConnectionError $e) {
+            Mage::throwException(Mage::helper('paygate')->__($e->getMessage()));
+        } catch (OpenpayApiAuthError $e) {
+            Mage::throwException(Mage::helper('paygate')->__($e->getMessage()));
+        } catch (OpenpayApiError $e) {
+            Mage::throwException(Mage::helper('paygate')->__($e->getMessage()));
         }
 
         // Set Openpay confirmation number as Order_Payment openpay_token
@@ -260,8 +271,7 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
             'source_id' => $token,
             'device_session_id' => $device_session_id,
             'amount' => (float) $amount,
-            'description' => Mage::app()->getStore()->getName() . ' Magento Store: '
-                .$this->_getHelper()->__($orderFirstItem->getName())
+            'description' => $this->_getHelper()->__($orderFirstItem->getName())
                 .(($numItems>1)?$this->_getHelper()->__('... and (%d) other items', $numItems-1): ''),
             'order_id' => $order->getIncrementId(),
             'capture' => $capture
@@ -284,8 +294,7 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
             'device_session_id' => $device_session_id,
             'method' => 'card',
             'amount' => $amount,
-            'description' => Mage::app()->getStore()->getName() . ' Magento Store: '
-                .$this->_getHelper()->__($orderFirstItem->getName())
+            'description' => $this->_getHelper()->__($orderFirstItem->getName())
                 .(($numItems>1)?$this->_getHelper()->__('... and (%d) other items', $numItems-1): ''),
             'order_id' => $order->getIncrementId(),
             'capture' => $capture);
@@ -295,6 +304,7 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
 
         return $charge;
     }
+
     /*
      * Create user in OpenPay
      */

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<layout version="0.1.1">
+<layout version="0.1.0">
     <checkout_onepage_index>
         <reference name="head">
             <action method="addExternalItem">
@@ -14,4 +14,32 @@
             </action>
         </reference>
     </checkout_onepage_index>
+    <opc_index_index translate="label">
+        <reference name="head">
+            <action method="addExternalItem">
+                <type>external_js</type>
+                <name>https://openpay.s3.amazonaws.com/openpay.v1.min.js</name>
+                <params/>
+            </action>
+            <action method="addExternalItem">
+                <type>external_js</type>
+                <name>https://openpay.s3.amazonaws.com/openpay-data.v1.min.js</name>
+                <params/>
+            </action>
+        </reference>
+  </opc_index_index>
+  <onestepcheckout_index_index>
+        <reference name="head">
+            <action method="addExternalItem">
+                <type>external_js</type>
+                <name>https://openpay.s3.amazonaws.com/openpay.v1.min.js</name>
+                <params/>
+            </action>
+            <action method="addExternalItem">
+                <type>external_js</type>
+                <name>https://openpay.s3.amazonaws.com/openpay-data.v1.min.js</name>
+                <params/>
+            </action>
+        </reference>
+  </onestepcheckout_index_index>
 </layout>
