@@ -6,6 +6,7 @@ What's new?
 Oct 14 (v.1.3)
 - Bug fixes
 - New template for stores and banks 
+- Support for one page checkout
 
 Sep 14 (v.1.2)
 - Added module for Store Charges
