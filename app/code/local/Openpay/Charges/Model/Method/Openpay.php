@@ -308,6 +308,7 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
      * Create user in OpenPay
      */
     protected function _createOpenpayCustomer($customer, $shippingAddress){
+        $streetInfo = explode("\n", $shippingAddress->street, 2);
 
         $customerData = array(
             'name' => $customer->firstname,
@@ -316,7 +317,8 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
             'phone_number' => $shippingAddress->telephone,
             'requires_account' => false,
             'address' => array(
-                'line1' => $shippingAddress->street,
+                'line1' => $streetInfo[0],
+                'line2' => $streetInfo[1],
                 'postal_code' => $shippingAddress->postcode,
                 'state' => $shippingAddress->region,
                 'city' => $shippingAddress->city,
