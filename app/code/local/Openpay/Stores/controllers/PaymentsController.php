@@ -55,7 +55,10 @@ class Openpay_Stores_PaymentsController extends Mage_Core_Controller_Front_Actio
         $block->setBarCodeUrl($charge->payment_method->barcode_url);
         $block->setAmount($charge->amount);
         $block->setConcept($charge->description);
-        $block->setEmail($customer->email);
+        
+        $email = $order->getCustomerEmail();
+        $block->setEmail($email);
+        
         $block->setStoreName(Mage::getStoreConfig('trans_email/ident_general/name'));
         $block->setStorePhone(Mage::getStoreConfig('general/store_information/phone'));
         $block->setStoreGeneralEmail(Mage::getStoreConfig('trans_email/ident_general/email'));
