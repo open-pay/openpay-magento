@@ -4,9 +4,9 @@
         <payment>
             <groups>
                 <banks translate="label comment" module="paygate">
-                    <label>OpenPay Bank Transfer</label>
+                    <label>Openpay Transferencia Interbancaria</label>
                     <frontend_type>text</frontend_type>
-                    <sort_order>1</sort_order>
+                    <sort_order>4</sort_order>
                     <show_in_default>1</show_in_default>
                     <show_in_website>1</show_in_website>
                     <show_in_store>1</show_in_store>
@@ -21,7 +21,7 @@
                             <show_in_store>0</show_in_store>
                         </active>
                         <title translate="label">
-                            <label>OpenPay Bank Transfer Title</label>
+                            <label>Título</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>20</sort_order>
                             <show_in_default>1</show_in_default>
@@ -29,8 +29,8 @@
                             <show_in_store>1</show_in_store>
                         </title>
                         <hours_active translate="label comment">
-                            <label>Hours Before Canceling Payment</label>
-                            <comment>Use 0 if want to keep it alive indefinitely</comment>
+                            <label>Horas para realizar el pago</label>
+                            <comment>Usar 0 si no desea establecer límite.</comment>
                             <frontend_type>text</frontend_type>
                             <sort_order>20</sort_order>
                             <show_in_default>1</show_in_default>

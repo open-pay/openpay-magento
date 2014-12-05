@@ -24,6 +24,8 @@ class Openpay_Stores_PaymentsController extends Mage_Core_Controller_Front_Actio
 
         $order = Mage::getModel('sales/order')->loadByIncrementId($request->order);
 
+        $customer = null;
+
         if($order->customer_is_guest){
             if($order->getPayment()->getOpenpayPaymentId() <> $request->id){
                 throw new Exception('You do not have enough permissions to see this page');
@@ -47,6 +49,8 @@ class Openpay_Stores_PaymentsController extends Mage_Core_Controller_Front_Actio
         $this->loadLayout();
 
         $block = $this->getLayout()->getBlock('root');
+        $email = isset($customer) && ($customer === true) ? 
+            $customer->email : $order->getPayment()->getOrder()->getBillingAddress()->getEmail();
 
         $block->setTranId($charge->id);
         $block->setTranDate($charge->creation_date);
@@ -55,7 +59,7 @@ class Openpay_Stores_PaymentsController extends Mage_Core_Controller_Front_Actio
         $block->setBarCodeUrl($charge->payment_method->barcode_url);
         $block->setAmount($charge->amount);
         $block->setConcept($charge->description);
-        $block->setEmail($customer->email);
+        $block->setEmail($email );
         $block->setStoreName(Mage::getStoreConfig('trans_email/ident_general/name'));
         $block->setStorePhone(Mage::getStoreConfig('general/store_information/phone'));
         $block->setStoreGeneralEmail(Mage::getStoreConfig('trans_email/ident_general/email'));

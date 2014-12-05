@@ -130,7 +130,7 @@
                 <group>openpay</group>
                 <active>1</active>
                 <order_status>pending</order_status>
-                <title>Pay With OpenPay</title>
+                <title>Openpay Tarjetas</title>
                 <allowspecific>0</allowspecific>
                 <group>offline</group>
             </charges>

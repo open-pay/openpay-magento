@@ -15,7 +15,7 @@
                 <order_status>pending</order_status>
 
                 <!-- default title for payment checkout page and order view page -->
-                <title>OpenPay Bank Transfer</title>
+                <title>Openpay Transferencia Interbancaria</title>
                 <payment_action>pending_payment</payment_action>
                 <allowspecific>0</allowspecific>
             </banks>

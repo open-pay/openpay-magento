@@ -58,6 +58,10 @@ Configuration
 4. Enable the payments methods that you want to have
 5. Save your config
 
+Configure state as required
+--------------------
+Go to **System > General > States Options** and select all allowed countries
+
 Payment Notifications (Stores and Banks)
 --------------------
 For receive payment notifications at the moment the pay was done, you need to configure a webhook notification in the Openpay Dashboard.

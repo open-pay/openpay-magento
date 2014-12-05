@@ -145,6 +145,26 @@ class Openpay_Stores_Model_Method_Stores extends Mage_Payment_Model_Method_Abstr
 
         );
 
+        $billingAddress = $payment->getOrder()->getBillingAddress();
+        $shippingAddress = $payment->getOrder()->getShippingAddress();
+
+        $chargeCustomer = array(          
+            'name' => $shippingAddress->getFirstname(),
+            'last_name' => $shippingAddress->getLastname(),
+            'email' => $billingAddress->getEmail(),
+            'requires_account' => false,
+            'phone_number' => $shippingAddress->getTelephone(),
+            'address' => array(
+                'line1' => implode(' ', $shippingAddress->getStreet()),
+                'state' => $shippingAddress->getRegion(),
+                'city' => $shippingAddress->getCity(),
+                'postal_code' => $shippingAddress->getPostcode(),
+                'country_code' => $shippingAddress->getCountry_id()
+            )
+         );
+              
+        $chargeData['customer'] = $chargeCustomer;
+
         if($hoursBeforeCancel){
             $chargeData['due_date'] = date('c', $this->_addHoursToTime(time(), $hoursBeforeCancel));
         }

@@ -42,7 +42,8 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
      * @return  Mage_Payment_Model_Info
      */
     public function assignData($data)
-    {  
+    {
+        
         if (is_array($data)) {
             $data = new Varien_Object($data);
         }
@@ -98,8 +99,13 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
         $info->setCcNumber($ccNumber);
 
         /* CC_number validation is not done because it should not get into the server */
+
+         Mage::log("Numero de tarjeta ". $ccNumber);
+        Mage::log("Tarjetas soportadas ". $this->getConfigData('cctypes'));
+        Mage::log("Tarjetas seleccionada ". $info->getCcType());
+
         if (!in_array($info->getCcType(), $availableTypes)){
-            $errorMsg = Mage::helper('payment')->__('Credit card type is not allowed for this payment method.');
+            $errorMsg = Mage::helper('payment')->__('Tipo de arjeta no soportada');
         }
 
         // Verify they are not sending sensitive information
@@ -134,6 +140,7 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
 
     public function capture(Varien_Object $payment, $amount){
 
+        Mage::log('capture:'.$payment);
         if(!$payment->hasOpenpayPaymentId()){
             $this->_doOpenpayTransaction($payment, $amount, true);
         }else{
@@ -276,6 +283,26 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
             'capture' => $capture
         );
 
+        $billingAddress = $payment->getOrder()->getBillingAddress();
+        $shippingAddress = $payment->getOrder()->getShippingAddress();
+
+        $chargeCustomer = array(          
+            'name' => $shippingAddress->getFirstname(),
+            'last_name' => $shippingAddress->getLastname(),
+            'email' => $billingAddress->getEmail(),
+            'requires_account' => false,
+            'phone_number' => $shippingAddress->getTelephone(),
+            'address' => array(
+                'line1' => implode(' ', $shippingAddress->getStreet()),
+                'state' => $shippingAddress->getRegion(),
+                'city' => $shippingAddress->getCity(),
+                'postal_code' => $shippingAddress->getPostcode(),
+                'country_code' => $shippingAddress->getCountry_id()
+            )
+         );
+              
+        $chargeData['customer'] = $chargeCustomer;
+
         /* Create the request to OpenPay to charge the CC*/
         $charge = $this->_openpay->charges->create($chargeData);
 
@@ -308,7 +335,6 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
      * Create user in OpenPay
      */
     protected function _createOpenpayCustomer($customer, $shippingAddress){
-        $streetInfo = explode("\n", $shippingAddress->street, 2);
 
         $customerData = array(
             'name' => $customer->firstname,
@@ -317,8 +343,7 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
             'phone_number' => $shippingAddress->telephone,
             'requires_account' => false,
             'address' => array(
-                'line1' => $streetInfo[0],
-                'line2' => $streetInfo[1],
+                'line1' => $shippingAddress->street,
                 'postal_code' => $shippingAddress->postcode,
                 'state' => $shippingAddress->region,
                 'city' => $shippingAddress->city,

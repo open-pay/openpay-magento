@@ -4,9 +4,9 @@
         <payment>
             <groups>
                 <charges translate="label comment" module="paygate">
-                    <label>OpenPay Gateway</label>
+                    <label>Openpay Tarjetas</label>
                     <frontend_type>text</frontend_type>
-                    <sort_order>1</sort_order>
+                    <sort_order>2</sort_order>
                     <show_in_default>1</show_in_default>
                     <show_in_website>1</show_in_website>
                     <show_in_store>1</show_in_store>
@@ -21,7 +21,7 @@
                             <show_in_store>0</show_in_store>
                         </active>
                         <title translate="label">
-                            <label>Title</label>
+                            <label>Título</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>20</sort_order>
                             <show_in_default>1</show_in_default>
@@ -29,7 +29,7 @@
                             <show_in_store>1</show_in_store>
                         </title>
                         <order_status translate="label">
-                            <label>New Order Status</label>
+                            <label>Estado de nueva orden</label>
                             <frontend_type>select</frontend_type>
                             <source_model>adminhtml/system_config_source_order_status</source_model>
                             <sort_order>50</sort_order>
@@ -38,7 +38,7 @@
                             <show_in_store>0</show_in_store>
                         </order_status>
                         <allowspecific translate="label">
-                            <label>Payment Applicable From</label>
+                            <label>Pago aplicable para</label>
                             <frontend_type>select</frontend_type>
                             <sort_order>61</sort_order>
                             <source_model>adminhtml/system_config_source_payment_allspecificcountries</source_model>
@@ -47,7 +47,7 @@
                             <show_in_store>0</show_in_store>
                         </allowspecific>
                         <specificcountry translate="label">
-                            <label>Countries Payment Applicable From</label>
+                            <label>Paises para aplicable para pago</label>
                             <frontend_type>multiselect</frontend_type>
                             <sort_order>70</sort_order>
                             <source_model>adminhtml/system_config_source_country</source_model>
@@ -59,8 +59,8 @@
                             </depends>
                         </specificcountry>
                         <cctypes translate="label comment">
-                            <label>Allowed Credit Card Types</label>
-                            <comment><![CDATA[Press ctrl and click to select more than one option]]></comment>
+                            <label>Tipos de tarjetas permitidos</label>
+                            <comment><![CDATA[Presione ctrl y clic para seleccionar más de una opción]]></comment>
                             <frontend_type>multiselect</frontend_type>
                             <source_model>charges/config::getSupportedCC</source_model>
                             <sort_order>50</sort_order>
