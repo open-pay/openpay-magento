@@ -229,12 +229,19 @@
 
         if (window["IWD"] && IWD.OPC) {
             //Obtenerlos desde el formulario
+            var select = document.getElementById('billing:region_id');
+            var state = document.getElementById('billing:region') ? document.getElementById('billing:region').value.substring(0,45) : "";
+
+            if (state == "" && select) {
+                state = select.options[select.selectedIndex].text;
+            }
+            
             var addressData ={
                     "city":  document.getElementById('billing:city').value.substring(0,30),
                     "line1": document.getElementById('billing:street1').value.substring(0,45),
                     "line2": document.getElementById('billing:street2').value.substring(0,45),
                     "postal_code": document.getElementById('billing:postcode').value.substring(0,45),
-                    "state": document.getElementById('billing:region').value.substring(0,45),
+                    "state": document.getElementById('billing:region') ? document.getElementById('billing:region').value.substring(0,45) : "",
                     "country_code": document.getElementById('billing:country_id').value.substring(0,2) 
             }
 
@@ -247,7 +254,7 @@
                     "line1": document.getElementById('billing:street1').value.substring(0,45),
                     "line2": document.getElementById('billing:street2').value.substring(0,45),
                     "postal_code": document.getElementById('billing:postcode').value.substring(0,45),
-                    "state": document.getElementById('billing:region') ? document.getElementById('billing:region').value.substring(0,45) : "",
+                    "state": state,
                     "country_code": document.getElementById('billing:country_id').value.substring(0,2)
             }
 
@@ -259,7 +266,7 @@
             var addressData = {
                     "city": '<?php echo $this->escapeHTML(substr(trim($_billingInfo['city']), 0, 30));?>',
                     "line1": '<?php echo $this->escapeHTML(substr(trim($_streetInfo[0]), 0, 45));?>',
-                    "line2": '<?php echo $this->escapeHTML(substr(trim($_streetInfo[1]), 0, 45));?>',
+                    "line2": '<?php echo $this->escapeHTML(isset($_streetInfo[1])? substr(trim($_streetInfo[1]), 0, 45) : "");?>',
                     "postal_code": '<?php echo $this->escapeHTML(substr(trim($_billingInfo['postcode']), 0, 45));?>',
                     "state": '<?php echo $this->escapeHTML(substr(trim($_billingInfo['region']), 0, 45));?>',
                     "country_code": '<?php echo $this->escapeHTML(substr(trim($_billingInfo['country_id']), 0, 2));?>'

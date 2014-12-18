@@ -4,7 +4,7 @@
         <payment>
             <groups>
                 <charges translate="label comment" module="paygate">
-                    <label>Openpay Tarjetas</label>
+                    <label>Tarjeta</label>
                     <frontend_type>text</frontend_type>
                     <sort_order>2</sort_order>
                     <show_in_default>1</show_in_default>

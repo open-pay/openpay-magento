@@ -17,8 +17,16 @@
     </div>
     <div class="Data-container">
         <div class="Data1">
-            <h1><strong>Cantidad a pagar</strong></h1>
-            <?php list($pesos, $cents) = explode('.', $this->getAmount()); $cents *= 1;?>
+                   
+        
+            <h1><strong>Cantidad a pagar <?php echo $this->getAmount();?></strong></h1>
+            <?php
+            $mountToProcess = $this->getAmount();
+            if (strpos($mountToProcess,'.') === false) {
+            	$mountToProcess = $mountToProcess . ".00";
+            }
+            
+            list($pesos, $cents) = explode('.', $mountToProcess); $cents *= 1;?>
             <h2>$<?php echo $pesos;?><span>.<?php echo (($cents%10 == 0)? $cents . '0': ($cents < 0)? '0' . $cents: $cents);?></span><small> MXN</small></h2>
             <h1><strong>Fecha límite de pago:</strong></h1>
             <h1><?php if($this->getDueDate()):?>

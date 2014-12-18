@@ -42,7 +42,12 @@
         </div>
         <div class="col2">
             <h2>Total a pagar</h2>
-            <?php list($pesos, $cents) = explode('.', $this->getAmount()); $cents *= 1;?>
+            <?php 
+            $mountToProcess = $this->getAmount();
+            if (strpos($mountToProcess,'.') === false) {
+            	$mountToProcess = $mountToProcess . ".00";
+            }
+            list($pesos, $cents) = explode('.', $mountToProcess, 2); $cents *= 1;?>
             <h1>$ <?php echo $pesos;?><span>.<?php echo (($cents%10 == 0)? $cents . '0': ($cents < 0)? '0' . $cents: $cents);?></span><small> MXN</small></h1>
             <h2 class="S-margin">+8 pesos por comisión</h2>
         </div>
