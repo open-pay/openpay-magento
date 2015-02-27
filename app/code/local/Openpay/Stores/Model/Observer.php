@@ -5,7 +5,8 @@ class Openpay_Stores_Model_Observer{
     public function checkoutOnepageControllerSuccessAction($order_ids){
 
         if(Mage::getConfig()->getModuleConfig('Openpay_Stores')->is('active', 'true')){
-            $order_id = $order_ids->getOrderIds()[0];
+        	$order_ids_list = $order_ids->getOrderIds();
+        	$order_id = $order_ids_list[0];
 
             $order = Mage::getModel('sales/order')->load($order_id);
 
