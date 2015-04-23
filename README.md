@@ -21,6 +21,18 @@ April 14 (v.1.0)
 - Charges with debit/credit cards
 - Added fraud tool
 
+Requirements
+--------------
+PHP 5.0.3 or greater
+
+Supported Versions
+-------------------
+Magento Community Edition 1.7.0.2
+Magento Community Edition 1.8.0.0 
+Magento Community Edition 1.8.1.0
+Magento Community Edition 1.9.0.0
+Magento Community Edition 1.9.0.1 
+
 Installation
 ------------
 
