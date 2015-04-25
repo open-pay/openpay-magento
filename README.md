@@ -18,7 +18,7 @@ Installation
 
 - Option A (Recommended)
 
-1. Download latest .tar.gz file
+1. Download latest [.tar.gz file](https://github.com/open-pay/openpay-magento/raw/master/Openpay_Charges-0.1.7.tgz)
 2. In your admin go to **System > Magento Connect > Magento Connect Manager** 
 3. Update the .tar.gz file using **Direct package file upload**
 
