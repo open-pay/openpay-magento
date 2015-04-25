@@ -1,26 +1,6 @@
 Magento - Openpay Module
 ===============
 
-What's new?
----------------
-Oct 14 (v.1.3)
-- Bug fixes
-- New template for stores and banks 
-- Support for one page checkout
-
-Sep 14 (v.1.2)
-- Added module for Store Charges
-- Added module for Banks Charges
-
-May 14 (v.1.1)
-- Customer management
-- Authorization and capture
-- Refund integration
-
-April 14 (v.1.0)
-- Charges with debit/credit cards
-- Added fraud tool
-
 Requirements
 --------------
 PHP 5.0.3 or greater
@@ -38,7 +18,7 @@ Installation
 
 - Option A (Recommended)
 
-1. Download the .tar.gz file
+1. Download latest .tar.gz file
 2. In your admin go to **System > Magento Connect > Magento Connect Manager** 
 3. Update the .tar.gz file using **Direct package file upload**
 
