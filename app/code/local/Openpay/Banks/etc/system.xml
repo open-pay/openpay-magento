@@ -4,7 +4,7 @@
         <payment>
             <groups>
                 <banks translate="label comment" module="paygate">
-                    <label>Openpay Transferencia Interbancaria</label>
+                    <label>Openpay - Transferencias interbancarias (SPEI)</label>
                     <frontend_type>text</frontend_type>
                     <sort_order>4</sort_order>
                     <show_in_default>1</show_in_default>

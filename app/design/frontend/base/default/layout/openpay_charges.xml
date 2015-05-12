@@ -13,6 +13,9 @@
                 <params/>
             </action>
         </reference>
+         <reference name="before_body_end">
+            <block type="core/template" name="token" template="openpay/form/token.phtml" />
+        </reference>
     </checkout_onepage_index>
     <opc_index_index translate="label">
         <reference name="head">
@@ -27,6 +30,9 @@
                 <params/>
             </action>
         </reference>
+         <reference name="before_body_end">
+            <block type="core/template" name="token" template="openpay/form/token.phtml" />
+        </reference>
   </opc_index_index>
   <onestepcheckout_index_index>
         <reference name="head">
@@ -40,6 +46,9 @@
                 <name>https://openpay.s3.amazonaws.com/openpay-data.v1.min.js</name>
                 <params/>
             </action>
+        </reference>
+         <reference name="before_body_end">
+            <block type="core/template" name="token" template="openpay/form/token.phtml" />
         </reference>
   </onestepcheckout_index_index>
 </layout>

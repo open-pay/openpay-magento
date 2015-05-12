@@ -1,0 +1,200 @@
+    function onError(e){
+        // on payment error display error and reset loading button
+        alert(e.data.description);
+        if (window["IWD"] && IWD.OPC) {
+            IWD.OPC.Checkout.unlockPlaceOrder();
+        } else if (oneStepForm != null) {
+            already_placing_order = false;
+            var submitelement = $('onestepcheckout-place-order');
+            /* Disable button to avoid multiple clicks */
+            submitelement.removeClassName('grey').addClassName('orange');
+            submitelement.disabled = false;
+            submitelement.parentNode.lastChild.remove();
+            return false;
+        } else {
+            payment.resetLoadWaiting();
+        }
+    }
+
+    // add a save function to validate form, if valid generate OpenPay Token, and save into Magento
+    function processOpenpayToken(){
+
+        // if payment used is openpay
+        if(payment.lastUsedMethod == '<?php echo $_code ?>'){
+            checkout.setLoadWaiting('payment');
+            createOpenpayToken();
+        }
+    }
+
+    function createOpenpayToken() {
+        OpenPay.setId('<?php echo Mage::getStoreConfig('payment/common/merchantid');?>');
+        OpenPay.setApiKey('<?php echo Mage::getStoreConfig('payment/common/publickey');?>');
+        <?php if(Mage::getStoreConfig('payment/common/sandbox')):?>OpenPay.setSandboxMode(true);<?php endif;?>
+        <?php $_billingInfo = Mage::getSingleton('checkout/session')->getQuote()->getBillingAddress()->getData();?>
+        var expiration_year = document.getElementById('<?php echo $_code ?>_expiration_yr').value.toString();
+        OpenPay.token.create({
+                "card_number": document.getElementById('<?php echo $_code ?>_cc_number').value,
+                "holder_name": document.getElementById('<?php echo $_code ?>_cc_owner').value,
+                "expiration_year": expiration_year.substr(expiration_year.length -2),
+                "expiration_month": document.getElementById('<?php echo $_code ?>_expiration').value,
+                "cvv2": document.getElementById('<?php echo $_code ?>_cc_cid').value,
+                "address":{
+                    "city": '<?php echo $this->escapeHTML(substr(trim($_billingInfo['city']), 0, 30));?>',
+                    "line3": '<?php echo $this->escapeHTML(substr(trim($_billingInfo['region']), 0, 45));?>',
+                    "postal_code": '<?php echo $this->escapeHTML(substr(trim($_billingInfo['postcode']), 0, 45));?>',
+                    "line1": '<?php echo $this->escapeHTML(substr(trim($_billingInfo['street']), 0, 45));?>',
+                    "state": '<?php echo $this->escapeHTML(substr(trim($_billingInfo['region']), 0, 45));?>',
+                    "country_code": '<?php echo $this->escapeHTML(substr(trim($_billingInfo['country_id']), 0, 2));?>'
+                }
+            },
+            function(e){
+                onSuccess(e);
+            },
+            function(e){
+                onError(e);
+            }
+        );
+    }
+    
+
+    // temporarily save the payment.save method
+    payment.tempSave = function(){
+        if (checkout.loadWaiting!=false) return;
+        var validator = new Validation(this.form);
+        alert("ps1");
+        if (this.validate() && validator.validate()) {
+            checkout.setLoadWaiting('payment');
+            alert("ps2");
+            var request = new Ajax.Request(
+                this.saveUrl,
+                {
+                    method:'post',
+                    onComplete: this.onComplete,
+                    onSuccess: this.onSave,
+                    onFailure: checkout.ajaxFailure.bind(checkout),
+                    parameters: Form.serialize(this.form)
+                }
+            );
+        }
+    };
+
+    // overwrite payment.save method to check if openpay is the method used
+    payment.save = function(){
+        alert("s1");
+        if(payment.lastUsedMethod == '<?php echo $_code ?>'){
+            alert("s2");
+            if(payment.openpayIsValid()){
+                alert("s3");
+                payment.openpaySave();
+            }else{
+                alert("s4");
+                payment.tempSave();
+            }
+        }else{
+            alert("s5");
+            payment.tempSave();
+        }
+    }
+
+    payment.openpaySave = function(){
+        processOpenpayToken();
+    }
+
+    payment.openpayIsValid = function(){
+        var expMonth = document.getElementById('<?php echo $_code ?>_expiration').value;
+        var expYear = document.getElementById('<?php echo $_code ?>_expiration_yr').value;
+        var cardNumber = document.getElementById('<?php echo $_code ?>_cc_number').value;
+
+        var e = document.getElementById("<?php echo $_code ?>_cc_type");
+        var selectedType = e.options[e.selectedIndex].innerHTML;
+
+
+        var validator = new Validation(payment.form);
+
+        // simply validate card details with openpay.js methods and magento's propietary ones
+        if(OpenPay.card.validateExpiry(expMonth, expYear) &&
+            OpenPay.card.validateAcceptCardNumber(cardNumber) &&
+            OpenPay.card.cardType(cardNumber).toLowerCase() == selectedType.toLowerCase() &&
+            validator.validate()){
+            return true;
+        } else{
+            return false;
+        }
+    }
+
+    var processPayment = function() {
+      //var currentMethod = (oneStepForm != null) ? payment.currentMethod : payment.lastUsedMethod;
+      if(payment.lastUsedMethod == '<?php echo $_code ?>'){
+        if (payment.openpayIsValid()) {
+          createOpenpayToken();
+        } else {
+          openpayTempSave();
+        }
+      } else {
+        openpayTempSave();
+      }
+    }
+
+    if (window["IWD"] && IWD.OPC) {
+        var initSaveOrder = function() {
+            IWD.OPC.saveOrderStatus = true;
+            IWD.OPC.Plugin.dispatch('saveOrderBefore');
+            if (IWD.OPC.Checkout.isVirtual === false) {
+              IWD.OPC.Checkout.lockPlaceOrder();
+              IWD.OPC.Shipping.saveShippingMethod();
+            } else {
+              IWD.OPC.validatePayment();
+            }
+          }
+      var openpayTempSave = function() {
+        initSaveOrder();
+      }
+      IWD.OPC.initSaveOrder = function() {
+        $(document).on('click', '.opc-btn-checkout', function() {
+
+          if (IWD.OPC.Checkout.disabledSave == true) {
+            return;
+          }
+          var addressForm = new VarienForm('billing-new-address-form');
+          if (!addressForm.validator.validate()) {
+            return;
+          }
+
+          if (!$j ('input[name="billing[use_for_shipping]"]').prop('checked')) {
+            var addressForm = new VarienForm('opc-address-form-shipping');
+            if (!addressForm.validator.validate()) {
+              return;
+            }
+          }
+          processPayment();
+        });
+      }
+    } else if (oneStepForm != null) {
+        var openpayTempSave = function() {
+        var form = new VarienForm('onestepcheckout-form');
+        if (form.validator.validate()) {
+          /* Submit the form */
+          $('onestepcheckout-form').submit();
+        } else {
+          already_placing_order = false;
+          var submitelement = $('onestepcheckout-place-order');
+          /* Disable button to avoid multiple clicks */
+          submitelement.removeClassName('grey').addClassName('orange');
+          submitelement.disabled = false;
+          submitelement.parentNode.lastChild.remove();
+        }
+      }
+      $$('.onestepcheckout-place-order').each(function(elem) {
+        elem.observe('click', function(e) {
+          already_placing_order = true;
+          var submitelement = $('onestepcheckout-place-order');
+          submitelement.removeClassName('orange').addClassName('grey');
+          submitelement.disabled = true;
+          var loaderelement = new Element('span').
+          addClassName('onestepcheckout-place-order-loading').
+          update('Por favor espere, estamos procesando su orden...');
+          submitelement.parentNode.appendChild(loaderelement);
+          processPayment();
+        });
+      });
+    } 

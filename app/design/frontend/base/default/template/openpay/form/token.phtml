@@ -1,0 +1,289 @@
+<script type="text/javascript">
+    //<![CDATA[
+    var oneStepForm = document.getElementById("onestepcheckout-form");
+    // create openpay device session id for fraud prevention
+    var deviceSessionId = OpenPay.deviceData.setup();
+    
+    function onSuccess(e){
+
+        // set openpay values to be saved in db
+        document.getElementById('<?php echo $_code ?>_card_token').value = e.data.id;
+        //document.getElementById('<?php echo $_code ?>_cc_number').value = e.data.card.card_number;
+        document.getElementById('<?php echo $_code ?>_device_session_id').value = deviceSessionId;
+
+        if (window["IWD"] && IWD.OPC) {
+            openpayTempSave();
+        } else if (oneStepForm != null) {
+            openpayTempSave();
+        } else {
+            var request = new Ajax.Request(
+                payment.saveUrl, {
+                    method:'post',
+                    onComplete: payment.onComplete,
+                    onSuccess: payment.onSave,
+                    onFailure: checkout.ajaxFailure.bind(checkout),
+                    parameters: Form.serialize(payment.form)
+                }
+            );
+        }
+    }
+
+    function onError(e){
+        // on payment error display error and reset loading button
+        alert(getErrorDescription(e.data));
+        if (window["IWD"] && IWD.OPC) {
+            IWD.OPC.Checkout.unlockPlaceOrder();
+        } else if (oneStepForm != null) {
+            already_placing_order = false;
+            var submitelement = $('onestepcheckout-place-order');
+            /* Disable button to avoid multiple clicks */
+            submitelement.removeClassName('grey').addClassName('orange');
+            submitelement.disabled = false;
+            submitelement.parentNode.lastChild.remove();
+            return false;
+        } else {
+            payment.resetLoadWaiting();
+        }
+    }
+    function getErrorDescription(data){
+        if (data.error_code == 1001 || data.error_code == 1003) {
+            return "La información de facturación esta incompleta o es incorrecta, favor de verificarla.";
+        } if (data.error_code == 2005){
+             return "Fecha de expiración inválida.";
+        } if (data.error_code == 2006){
+             return "El código cvv es requerido.";
+        } if (data.error_code == 2004){
+             return "Número de tarjeta inválido.";
+        } if (data.error_code == 1004){
+             return "Servicio no disponible";
+        }  
+
+        return "Ocurrió un error interno que no permitio que la operación se completara.";
+        
+    }
+
+    // add a save function to validate form, if valid generate OpenPay Token, and save into Magento
+    function processOpenpayToken(){
+        // if payment used is openpay
+        if(payment.lastUsedMethod == '<?php echo $_code ?>'){
+            checkout.setLoadWaiting('payment');
+            createOpenpayToken();
+        }
+    }
+
+    function createOpenpayToken() {
+        
+        OpenPay.setId('<?php echo Mage::getStoreConfig('payment/common/merchantid');?>');
+        OpenPay.setApiKey('<?php echo Mage::getStoreConfig('payment/common/publickey');?>');
+        
+        <?php if(Mage::getStoreConfig('payment/common/sandbox')):?>OpenPay.setSandboxMode(true);<?php endif;?>
+        <?php $_billingInfo = Mage::getSingleton('checkout/session')->getQuote()->getBillingAddress()->getData();?>
+        <?php $_streetInfo = explode("\n", $_billingInfo['street'], 2);?>
+        var expiration_year = document.getElementById('<?php echo $_code ?>_expiration_yr').value.toString();
+        
+        var tokenData = {
+                "card_number": document.getElementById('<?php echo $_code ?>_cc_number').value,
+                "holder_name": document.getElementById('<?php echo $_code ?>_cc_owner').value,
+                "expiration_year": expiration_year.substr(expiration_year.length -2),
+                "expiration_month": document.getElementById('<?php echo $_code ?>_expiration').value,
+                "cvv2": document.getElementById('<?php echo $_code ?>_cc_cid').value
+            };
+
+        if (window["IWD"] && IWD.OPC) {
+            //Obtenerlos desde el formulario
+            var select = document.getElementById('billing:region_id');
+            var state = document.getElementById('billing:region') ? document.getElementById('billing:region').value.substring(0,45) : "";
+
+            if (state == "" && select) {
+                state = select.options[select.selectedIndex].text;
+            }
+            
+            var addressData ={
+                    "city":  document.getElementById('billing:city').value.substring(0,30),
+                    "line1": document.getElementById('billing:street1').value.substring(0,45),
+                    "line2": document.getElementById('billing:street2').value.substring(0,45),
+                    "postal_code": document.getElementById('billing:postcode').value.substring(0,45),
+                    "state": document.getElementById('billing:region') ? document.getElementById('billing:region').value.substring(0,45) : "",
+                    "country_code": document.getElementById('billing:country_id').value.substring(0,2) 
+            }
+
+            tokenData['address'] = addressData;
+
+        } else if (oneStepForm != null) {
+            //ver como se obtienen los datos de este formulario
+            var addressData ={
+                    "city":  document.getElementById('billing:city').value.substring(0,30),
+                    "line1": document.getElementById('billing:street1').value.substring(0,45),
+                    "line2": document.getElementById('billing:street2').value.substring(0,45),
+                    "postal_code": document.getElementById('billing:postcode').value.substring(0,45),
+                    "state": state,
+                    "country_code": document.getElementById('billing:country_id').value.substring(0,2)
+            }
+
+            tokenData['address'] = addressData;
+
+
+        } else {
+            //es el proceso normal
+            var addressData = {
+                    "city": '<?php echo $this->escapeHTML(substr(trim($_billingInfo['city']), 0, 30));?>',
+                    "line1": '<?php echo $this->escapeHTML(substr(trim($_streetInfo[0]), 0, 45));?>',
+                    "line2": '<?php echo $this->escapeHTML(isset($_streetInfo[1])? substr(trim($_streetInfo[1]), 0, 45) : "");?>',
+                    "postal_code": '<?php echo $this->escapeHTML(substr(trim($_billingInfo['postcode']), 0, 45));?>',
+                    "state": '<?php echo $this->escapeHTML(substr(trim($_billingInfo['region']), 0, 45));?>',
+                    "country_code": '<?php echo $this->escapeHTML(substr(trim($_billingInfo['country_id']), 0, 2));?>'
+                }
+            
+
+            tokenData['address'] = addressData;
+        }
+
+
+
+         OpenPay.token.create(tokenData,
+            function(e){
+                onSuccess(e);
+            },
+            function(e){
+                onError(e);
+            }
+        );
+    }
+
+    // temporarily save the payment.save method
+    payment.tempSave = function(){
+        if (checkout.loadWaiting!=false) return;
+        var validator = new Validation(this.form);
+        if (this.validate() && validator.validate()) {
+            checkout.setLoadWaiting('payment');
+            var request = new Ajax.Request(
+                this.saveUrl,
+                {
+                    method:'post',
+                    onComplete: this.onComplete,
+                    onSuccess: this.onSave,
+                    onFailure: checkout.ajaxFailure.bind(checkout),
+                    parameters: Form.serialize(this.form)
+                }
+            );
+        }
+    };
+
+    // overwrite payment.save method to check if openpay is the method used
+    payment.save = function(){
+        if(payment.lastUsedMethod == '<?php echo $_code ?>'){
+            if(payment.openpayIsValid()){
+                payment.openpaySave();
+            }else{
+                payment.tempSave();
+            }
+        }else{
+            payment.tempSave();
+        }
+    }
+
+    payment.openpaySave = function(){
+        processOpenpayToken();
+    }
+
+    payment.openpayIsValid = function(){
+        var expMonth = document.getElementById('<?php echo $_code ?>_expiration').value;
+        var expYear = document.getElementById('<?php echo $_code ?>_expiration_yr').value;
+        var cardNumber = document.getElementById('<?php echo $_code ?>_cc_number').value;
+
+        var e = document.getElementById("<?php echo $_code ?>_cc_type");
+        var selectedType = e.options[e.selectedIndex].innerHTML;
+
+
+        var validator = new Validation(payment.form);
+
+        // simply validate card details with openpay.js methods and magento's propietary ones
+        if(OpenPay.card.validateExpiry(expMonth, expYear) &&
+            OpenPay.card.validateAcceptCardNumber(cardNumber) &&
+            OpenPay.card.cardType(cardNumber).toLowerCase() == selectedType.toLowerCase() &&
+            validator.validate()){
+            return true;
+        } else{
+            return false;
+        }
+    }
+
+    var processPayment = function() {
+      //var currentMethod = (oneStepForm != null) ? payment.currentMethod : payment.lastUsedMethod;
+      if(payment.lastUsedMethod == '<?php echo $_code ?>'){
+        if (payment.openpayIsValid()) {
+          createOpenpayToken();
+        } else {
+          openpayTempSave();
+        }
+      } else {
+        openpayTempSave();
+      }
+    }
+
+    if (window["IWD"] && IWD.OPC) {
+        var initSaveOrder = function() {
+            IWD.OPC.saveOrderStatus = true;
+            IWD.OPC.Plugin.dispatch('saveOrderBefore');
+            if (IWD.OPC.Checkout.isVirtual === false) {
+              IWD.OPC.Checkout.lockPlaceOrder();
+              IWD.OPC.Shipping.saveShippingMethod();
+            } else {
+              IWD.OPC.validatePayment();
+            }
+          }
+      var openpayTempSave = function() {
+        initSaveOrder();
+      }
+      IWD.OPC.initSaveOrder = function() {
+        $(document).on('click', '.opc-btn-checkout', function() {
+
+          if (IWD.OPC.Checkout.disabledSave == true) {
+            return;
+          }
+          var addressForm = new VarienForm('billing-new-address-form');
+          if (!addressForm.validator.validate()) {
+            return;
+          }
+
+          if (!$j ('input[name="billing[use_for_shipping]"]').prop('checked')) {
+            var addressForm = new VarienForm('opc-address-form-shipping');
+            if (!addressForm.validator.validate()) {
+              return;
+            }
+          }
+          processPayment();
+        });
+      }
+    } else if (oneStepForm != null) {
+        var openpayTempSave = function() {
+        var form = new VarienForm('onestepcheckout-form');
+        if (form.validator.validate()) {
+          /* Submit the form */
+          $('onestepcheckout-form').submit();
+        } else {
+          already_placing_order = false;
+          var submitelement = $('onestepcheckout-place-order');
+          /* Disable button to avoid multiple clicks */
+          submitelement.removeClassName('grey').addClassName('orange');
+          submitelement.disabled = false;
+          submitelement.parentNode.lastChild.remove();
+        }
+      }
+      $$('.onestepcheckout-place-order').each(function(elem) {
+        elem.observe('click', function(e) {
+          already_placing_order = true;
+          var submitelement = $('onestepcheckout-place-order');
+          submitelement.removeClassName('orange').addClassName('grey');
+          submitelement.disabled = true;
+          var loaderelement = new Element('span').
+          addClassName('onestepcheckout-place-order-loading').
+          update('Por favor espere, estamos procesando su orden...');
+          submitelement.parentNode.appendChild(loaderelement);
+          processPayment();
+        });
+      });
+    }
+
+    //]]>
+</script>

@@ -4,7 +4,7 @@
         <payment>
             <groups>
                 <stores translate="label comment" module="paygate">
-                    <label>Openpay Tiendas de Conveniencia</label>
+                    <label>Openpay - Tiendas de conveniencia</label>
                     <frontend_type>text</frontend_type>
                     <sort_order>3</sort_order>
                     <show_in_default>1</show_in_default>

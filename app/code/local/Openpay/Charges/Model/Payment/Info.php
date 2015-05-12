@@ -39,8 +39,6 @@ class Openpay_Charges_Model_Payment_Info extends Mage_Payment_Model_Info
             $token = $this->getToken($data->getStripeToken());
             $data->addData(array(
                 'cc_last4' => $token->card->last4,
-                'cc_exp_year' => $token->card->exp_year,
-                'cc_exp_month' => $token->card->exp_month,
                 'cc_type' => $token->card->type,
                 'cc_owner' => $token->card->name,
             ));
