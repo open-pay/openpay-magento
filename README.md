@@ -1,5 +1,4 @@
-Magento - Openpay Module
-===============
+![Openpay Magento](http://www.openpay.mx/img/github/magento.jpg)
 
 Requirements
 --------------
