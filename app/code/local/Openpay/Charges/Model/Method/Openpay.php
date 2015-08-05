@@ -140,7 +140,7 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
 
     public function capture(Varien_Object $payment, $amount){
 
-        Mage::log('capture:'.$payment);
+        //Mage::log($payment);
         if(!$payment->hasOpenpayPaymentId()){
             $this->_doOpenpayTransaction($payment, $amount, true);
         }else{
