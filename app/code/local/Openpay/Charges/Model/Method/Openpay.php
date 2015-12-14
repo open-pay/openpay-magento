@@ -59,8 +59,7 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
             $this->_openpay_token       = $paymentRequest['openpay_token'];
             $this->_device_session_id   = $paymentRequest['device_session_id'];
 
-            $info->setOpenpayToken($paymentRequest['openpay_token'])
-                ->setDeviceSessionId($paymentRequest['device_session_id']);
+            $info->setOpenpayToken($paymentRequest['openpay_token'])->setDeviceSessionId($paymentRequest['device_session_id']);
         } catch (Exception $e) {}
 
         return parent::assignData($data);
@@ -100,7 +99,7 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
 
         /* CC_number validation is not done because it should not get into the server */
 
-         Mage::log("Numero de tarjeta ". $ccNumber);
+        Mage::log("Numero de tarjeta ". $ccNumber);
         Mage::log("Tarjetas soportadas ". $this->getConfigData('cctypes'));
         Mage::log("Tarjetas seleccionada ". $info->getCcType());
 
@@ -140,7 +139,7 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
 
     public function capture(Varien_Object $payment, $amount){
 
-        //Mage::log($payment);
+        Mage::log('capture:'.$payment);
         if(!$payment->hasOpenpayPaymentId()){
             $this->_doOpenpayTransaction($payment, $amount, true);
         }else{
@@ -286,20 +285,25 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
         $billingAddress = $payment->getOrder()->getBillingAddress();
         $shippingAddress = $payment->getOrder()->getShippingAddress();
 
+        
         $chargeCustomer = array(          
             'name' => $shippingAddress->getFirstname(),
             'last_name' => $shippingAddress->getLastname(),
             'email' => $billingAddress->getEmail(),
             'requires_account' => false,
-            'phone_number' => $shippingAddress->getTelephone(),
-            'address' => array(
+            'phone_number' => $shippingAddress->getTelephone()            
+         );
+        
+        // Validate all required data for Customer's Address object
+        if($shippingAddress->getStreet() && $shippingAddress->getRegion() && $shippingAddress->getCity() && $shippingAddress->getCountry_id() && $shippingAddress->getPostcode()){
+            $chargeCustomer['address'] =  array(
                 'line1' => implode(' ', $shippingAddress->getStreet()),
                 'state' => $shippingAddress->getRegion(),
                 'city' => $shippingAddress->getCity(),
                 'postal_code' => $shippingAddress->getPostcode(),
                 'country_code' => $shippingAddress->getCountry_id()
-            )
-         );
+            );
+        }
               
         $chargeData['customer'] = $chargeCustomer;
 
