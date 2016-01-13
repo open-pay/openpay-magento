@@ -151,15 +151,19 @@ class Openpay_Banks_Model_Method_Banks extends Mage_Payment_Model_Method_Abstrac
             'last_name' => $shippingAddress->getLastname(),
             'email' => $billingAddress->getEmail(),
             'requires_account' => false,
-            'phone_number' => $shippingAddress->getTelephone(),
-            'address' => array(
+            'phone_number' => $shippingAddress->getTelephone()
+        );
+        
+        // Validate all required data for Customer's Address object
+        if($shippingAddress->getStreet() && $shippingAddress->getRegion() && $shippingAddress->getCity() && $shippingAddress->getCountry_id() && $shippingAddress->getPostcode()){
+            $chargeCustomer['address'] =  array(
                 'line1' => implode(' ', $shippingAddress->getStreet()),
                 'state' => $shippingAddress->getRegion(),
                 'city' => $shippingAddress->getCity(),
                 'postal_code' => $shippingAddress->getPostcode(),
                 'country_code' => $shippingAddress->getCountry_id()
-            )
-         );
+            );
+        }
               
         $chargeData['customer'] = $chargeCustomer;
 
@@ -193,13 +197,18 @@ class Openpay_Banks_Model_Method_Banks extends Mage_Payment_Model_Method_Abstrac
             'last_name' => $customer->lastname,
             'email' => $customer->email,
             'phone_number' => $shippingAddress->telephone,
-            'requires_account' => false,
-            'address' => array(
+            'requires_account' => false
+        );
+        
+        if($shippingAddress->street && $shippingAddress->postcode && $shippingAddress->region && $shippingAddress->city && $shippingAddress->country_id) {
+            $customerData['address'] = array(
                 'line1' => $shippingAddress->street,
                 'postal_code' => $shippingAddress->postcode,
                 'state' => $shippingAddress->region,
                 'city' => $shippingAddress->city,
-                'country_code' => $shippingAddress->country_id));
+                'country_code' => $shippingAddress->country_id
+            );
+        }
 
         $customer = $this->_openpay->customers->add($customerData);
 

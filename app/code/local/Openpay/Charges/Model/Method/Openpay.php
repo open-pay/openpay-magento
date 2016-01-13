@@ -345,13 +345,18 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
             'last_name' => $customer->lastname,
             'email' => $customer->email,
             'phone_number' => $shippingAddress->telephone,
-            'requires_account' => false,
-            'address' => array(
+            'requires_account' => false
+        );
+        
+        if($shippingAddress->street && $shippingAddress->postcode && $shippingAddress->region && $shippingAddress->city && $shippingAddress->country_id) {
+            $customerData['address'] = array(
                 'line1' => $shippingAddress->street,
                 'postal_code' => $shippingAddress->postcode,
                 'state' => $shippingAddress->region,
                 'city' => $shippingAddress->city,
-                'country_code' => $shippingAddress->country_id));
+                'country_code' => $shippingAddress->country_id
+            );
+        }        
 
         $customer = $this->_openpay->customers->add($customerData);
 
