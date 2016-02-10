@@ -101,7 +101,7 @@
     }
 
     function createOpenpayToken() {
-
+        
         OpenPay.setId('<?php echo Mage::getStoreConfig('payment/common/merchantid'); ?>');
         OpenPay.setApiKey('<?php echo Mage::getStoreConfig('payment/common/publickey'); ?>');
 
@@ -126,11 +126,11 @@
         var select = document.getElementById('billing:region_id');
         var state = document.getElementById('billing:region') ? document.getElementById('billing:region').value.substring(0, 45) : "";
 
-        if (state == "" && select) {
+        if (state === "" && select) {
             state = select.options[select.selectedIndex].text;
         }
-        
-        if(document.getElementById('billing:city').value && document.getElementById('billing:street1').value && document.getElementById('billing:postcode').value && document.getElementById('billing:country_id').value && state !== "") {
+         
+        if(validateElement('billing:city') && validateElement('billing:street1') && validateElement('billing:postcode') && validateElement('billing:country_id') && state !== "") {
             //Obtenerlos desde el formulario
             var addressData = {
                 "city": document.getElementById('billing:city').value.substring(0, 30),
@@ -280,6 +280,14 @@
         }
         return "";
     }
+    
+    function validateElement(elmId) {
+        var elem = document.getElementById(elmId);
+        if(typeof elem !== 'undefined' && elem !== null) {
+          return true;
+        }
+        return false;
+    }
 
     if (typeof $ !== 'undefined') {
         (function ($) {
@@ -290,6 +298,6 @@
             }
         })(jQuery);
     }
-
+    
     //]]>
 </script>
