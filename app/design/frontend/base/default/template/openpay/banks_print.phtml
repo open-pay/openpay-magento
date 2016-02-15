@@ -19,7 +19,7 @@
         <div class="Data1">
                    
         
-            <h1><strong>Cantidad a pagar <?php echo $this->getAmount();?></strong></h1>
+            <h1><strong>Cantidad a pagar</strong></h1>
             <?php
             $mountToProcess = $this->getAmount();
             if (strpos($mountToProcess,'.') === false) {
@@ -27,10 +27,10 @@
             }
             
             list($pesos, $cents) = explode('.', $mountToProcess); $cents *= 1;?>
-            <h2>$<?php echo $pesos;?><span>.<?php echo (($cents%10 == 0)? $cents . '0': ($cents < 0)? '0' . $cents: $cents);?></span><small> MXN</small></h2>
+            <h2>$<?php echo number_format($pesos,0) ?><span>.<?php echo (($cents%10 == 0)? $cents . '0': ($cents < 0)? '0' . $cents: $cents);?></span><small> MXN</small></h2>
             <h1><strong>Fecha límite de pago:</strong></h1>
             <h1><?php if($this->getDueDate()):?>
-                    <?php echo date('d F Y h:i:s a', strtotime($this->getDueDate()));?>
+                    <?php echo $this->getDueDate() ?>
                 <?php else:?>
                     <?php echo $this->__('No aplica');?>
                 <?php endif;?>

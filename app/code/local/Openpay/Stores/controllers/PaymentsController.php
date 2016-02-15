@@ -20,6 +20,13 @@ class Openpay_Stores_PaymentsController extends Mage_Core_Controller_Front_Actio
 
     public function printAction(){
 
+        /**
+         * Magento utiliza el timezone UTC, por lo tanto sobreescribimos este 
+         * por la configuración que se define en el administrador         
+         */
+        $store_tz = Mage::getStoreConfig('general/locale/timezone');
+        date_default_timezone_set($store_tz);        
+        
         $request = Mage::app()->getRequest();
 
         $order = Mage::getModel('sales/order')->loadByIncrementId($request->order);
@@ -49,12 +56,11 @@ class Openpay_Stores_PaymentsController extends Mage_Core_Controller_Front_Actio
         $this->loadLayout();
 
         $block = $this->getLayout()->getBlock('root');
-        $email = isset($customer) && ($customer === true) ? 
-            $customer->email : $order->getPayment()->getOrder()->getBillingAddress()->getEmail();
+        $email = isset($customer) && ($customer === true) ? $customer->email : $order->getPayment()->getOrder()->getBillingAddress()->getEmail();
 
         $block->setTranId($charge->id);
-        $block->setTranDate($charge->creation_date);
-        $block->setDueDate($charge->due_date);
+        $block->setTranDate($this->getLongGlobalDateFormat($charge->creation_date));
+        $block->setDueDate($this->getLongGlobalDateFormat($charge->due_date));
         $block->setBarCode($charge->payment_method->reference);
         $block->setBarCodeUrl($charge->payment_method->barcode_url);
         $block->setAmount($charge->amount);
@@ -162,5 +168,25 @@ class Openpay_Stores_PaymentsController extends Mage_Core_Controller_Front_Actio
         }
 
         return $charge;
+    }
+    
+    private function getLongGlobalDateFormat($date){
+        $time = strtotime($date);        
+        $month_number = date('n', $time);
+        $months_array = array(
+            1 => 'Enero',
+            2 => 'Febrero',
+            3 => 'Marzo',
+            4 => 'Abril',
+            5 => 'Mayo',
+            6 => 'Junio',
+            7 => 'Julio',
+            8 => 'Agosto',
+            9 => 'Septiembre',
+            10 => 'Octubre',
+            11 => 'Noviembre',
+            12 => 'Diciembre'
+        );
+        return date('j', $time).' de '.$months_array[$month_number].' de '.date('Y', $time).', a las '.date('g:i A', $time);
     }
 }

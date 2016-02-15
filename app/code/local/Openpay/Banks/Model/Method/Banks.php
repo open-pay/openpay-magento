@@ -127,6 +127,13 @@ class Openpay_Banks_Model_Method_Banks extends Mage_Payment_Model_Method_Abstrac
      */
     protected function _prepareStorePaymentSheetInOpenpay(Varien_Object $payment, $amount){
 
+        /**
+         * Magento utiliza el timezone UTC, por lo tanto sobreescribimos este 
+         * por la configuración que se define en el administrador         
+         */
+        $store_tz = Mage::getStoreConfig('general/locale/timezone');
+        date_default_timezone_set($store_tz);
+        
         $order = $payment->getOrder();
         $orderFirstItem = $order->getItemById(0);
         $numItems = $order->getTotalItemCount();
@@ -168,7 +175,7 @@ class Openpay_Banks_Model_Method_Banks extends Mage_Payment_Model_Method_Abstrac
         $chargeData['customer'] = $chargeCustomer;
 
         if($hoursBeforeCancel){
-            $chargeData['due_date'] = date('c', $this->_addHoursToTime(time(), $hoursBeforeCancel));
+            $chargeData['due_date'] = date('Y-m-d\TH:i:s', strtotime('+' . $hoursBeforeCancel . ' hours'));            
         }
 
         /* Create the request to OpenPay to charge the CC*/
@@ -216,6 +223,13 @@ class Openpay_Banks_Model_Method_Banks extends Mage_Payment_Model_Method_Abstrac
     }
     protected function _prepareStorePaymentSheetForCustomer($payment, $amount, $user_id){
 
+        /**
+         * Magento utiliza el timezone UTC, por lo tanto sobreescribimos este 
+         * por la configuración que se define en el administrador         
+         */
+        $store_tz = Mage::getStoreConfig('general/locale/timezone');
+        date_default_timezone_set($store_tz);
+        
         $order = $payment->getOrder();
         $orderFirstItem = $order->getItemById(0);
         $numItems = $order->getTotalItemCount();
@@ -231,7 +245,7 @@ class Openpay_Banks_Model_Method_Banks extends Mage_Payment_Model_Method_Abstrac
         );
 
         if($hoursBeforeCancel){
-            $chargeData['due_date'] = date('c', $this->_addHoursToTime(time(), $hoursBeforeCancel));
+            $chargeData['due_date'] = date('Y-m-d\TH:i:s', strtotime('+' . $hoursBeforeCancel . ' hours'));            
         }
 
         $customer = $this->_openpay->customers->get($user_id);

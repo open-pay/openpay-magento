@@ -128,6 +128,13 @@ class Openpay_Stores_Model_Method_Stores extends Mage_Payment_Model_Method_Abstr
      */
     protected function _prepareStorePaymentSheetInOpenpay(Varien_Object $payment, $amount){
 
+        /**
+         * Magento utiliza el timezone UTC, por lo tanto sobreescribimos este 
+         * por la configuración que se define en el administrador         
+         */
+        $store_tz = Mage::getStoreConfig('general/locale/timezone');
+        date_default_timezone_set($store_tz);
+        
         $order = $payment->getOrder();
         $orderFirstItem = $order->getItemById(0);
         $numItems = $order->getTotalItemCount();
@@ -141,8 +148,6 @@ class Openpay_Stores_Model_Method_Stores extends Mage_Payment_Model_Method_Abstr
             'description' => $this->_getHelper()->__($orderFirstItem->getName())
                 .(($numItems>1)?$this->_getHelper()->__('... and (%d) other items', $numItems-1): ''),
             'order_id' => $order->getIncrementId(),
-
-
         );
 
         $billingAddress = $payment->getOrder()->getBillingAddress();
@@ -170,7 +175,7 @@ class Openpay_Stores_Model_Method_Stores extends Mage_Payment_Model_Method_Abstr
         $chargeData['customer'] = $chargeCustomer;
 
         if($hoursBeforeCancel){
-            $chargeData['due_date'] = date('c', $this->_addHoursToTime(time(), $hoursBeforeCancel));
+            $chargeData['due_date'] = date('Y-m-d\TH:i:s', strtotime('+' . $hoursBeforeCancel . ' hours'));            
         }
 
         /* Create the request to OpenPay to charge the CC*/
@@ -218,6 +223,13 @@ class Openpay_Stores_Model_Method_Stores extends Mage_Payment_Model_Method_Abstr
     }
     protected function _prepareStorePaymentSheetForCustomer($payment, $amount, $user_id){
 
+        /**
+         * Magento utiliza el timezone UTC, por lo tanto sobreescribimos este 
+         * por la configuración que se define en el administrador         
+         */
+        $store_tz = Mage::getStoreConfig('general/locale/timezone');
+        date_default_timezone_set($store_tz);
+        
         $order = $payment->getOrder();
         $orderFirstItem = $order->getItemById(0);
         $numItems = $order->getTotalItemCount();
@@ -232,8 +244,8 @@ class Openpay_Stores_Model_Method_Stores extends Mage_Payment_Model_Method_Abstr
             'order_id' => $order->getIncrementId(),
         );
 
-        if($hoursBeforeCancel){
-            $chargeData['due_date'] = date('c', $this->_addHoursToTime(time(), $hoursBeforeCancel));
+        if($hoursBeforeCancel){            
+            $chargeData['due_date'] = date('Y-m-d\TH:i:s', strtotime('+' . $hoursBeforeCancel . ' hours'));            
         }
 
         $customer = $this->_openpay->customers->get($user_id);
@@ -241,9 +253,5 @@ class Openpay_Stores_Model_Method_Stores extends Mage_Payment_Model_Method_Abstr
 
         return $charge;
     }
-    protected function _addHoursToTime($time, $hours){
-        $seconds = $hours * 60 * 60;
-        $newTime = $time + $seconds;
-        return $newTime;
-    }
+    
 }

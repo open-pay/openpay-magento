@@ -19,6 +19,13 @@ class Openpay_Banks_PaymentsController extends Mage_Core_Controller_Front_Action
     }
 
     public function printAction(){
+        
+        /**
+         * Magento utiliza el timezone UTC, por lo tanto sobreescribimos este 
+         * por la configuración que se define en el administrador         
+         */
+        $store_tz = Mage::getStoreConfig('general/locale/timezone');
+        date_default_timezone_set($store_tz);  
 
         $request = Mage::app()->getRequest();
 
@@ -49,8 +56,8 @@ class Openpay_Banks_PaymentsController extends Mage_Core_Controller_Front_Action
         $block = $this->getLayout()->getBlock('root');
 
         $block->setTranId($charge->id);
-        $block->setTranDate($charge->creation_date);
-        $block->setDueDate($charge->due_date);
+        $block->setTranDate($this->getLongGlobalDateFormat($charge->creation_date));
+        $block->setDueDate($this->getLongGlobalDateFormat($charge->due_date));
         $block->setAmount($charge->amount);
         $block->setConcept($charge->description);
         $block->setClabe($charge->payment_method->clabe);
@@ -157,4 +164,25 @@ class Openpay_Banks_PaymentsController extends Mage_Core_Controller_Front_Action
 
         return $charge;
     }
+    
+    private function getLongGlobalDateFormat($date){
+        $time = strtotime($date);        
+        $month_number = date('n', $time);
+        $months_array = array(
+            1 => 'Enero',
+            2 => 'Febrero',
+            3 => 'Marzo',
+            4 => 'Abril',
+            5 => 'Mayo',
+            6 => 'Junio',
+            7 => 'Julio',
+            8 => 'Agosto',
+            9 => 'Septiembre',
+            10 => 'Octubre',
+            11 => 'Noviembre',
+            12 => 'Diciembre'
+        );
+        return date('j', $time).' de '.$months_array[$month_number].' de '.date('Y', $time).', a las '.date('g:i A', $time);
+    }
+    
 }

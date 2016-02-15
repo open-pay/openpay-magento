@@ -34,9 +34,7 @@
  */
 class Openpay_Charges_Model_Customer_Entity_Setup extends Mage_Customer_Model_Entity_Setup
 {
-	public function __construct()
-	{
-		$entities = parent::getDefaultEntities();
-		return $entities;
-	}
+    $entities = parent::getDefaultEntities();
+    return $entities;
+
 }

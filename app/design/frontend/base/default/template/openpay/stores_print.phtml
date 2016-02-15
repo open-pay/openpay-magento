@@ -30,7 +30,7 @@
             <h3>Fecha límite de pago</h3>
             <h4>
                 <?php if($this->getDueDate()):?>
-                    <?php echo date('d F Y h:i:s\, A', strtotime($this->getDueDate()));?>
+                    <?php echo $this->getDueDate() ?>
                 <?php else:?>
                     <?php echo $this->__('No aplica');?>
                 <?php endif;?>
@@ -48,7 +48,7 @@
             	$mountToProcess = $mountToProcess . ".00";
             }
             list($pesos, $cents) = explode('.', $mountToProcess, 2); $cents *= 1;?>
-            <h1>$ <?php echo $pesos;?><span>.<?php echo (($cents%10 == 0)? $cents . '0': ($cents < 0)? '0' . $cents: $cents);?></span><small> MXN</small></h1>
+            <h1>$ <?php echo number_format($pesos,0) ?><span>.<?php echo (($cents%10 == 0)? $cents . '0': ($cents < 0)? '0' . $cents: $cents);?></span><small> MXN</small></h1>
             <h2 class="S-margin">+8 pesos por comisión</h2>
         </div>
     </div>
@@ -67,8 +67,8 @@
             <span><?php echo $this->getConcept();?></span>
         </div>
         <div class="table-row color2">
-            <div>Fecha y hora</div>
-            <span><?php echo date('Y/m/d H:i:s', strtotime($this->getTranDate()));?> hrs.</span>
+            <div>Fecha y hora</div>            
+            <span><?php echo$this->getTranDate() ?></span>
         </div>
         <div class="table-row color1">
             <div>Correo electrónico:</div>
