@@ -282,8 +282,8 @@
     }
     
     function validateElement(elmId) {
-        var elem = document.getElementById(elmId);
-        if(typeof elem !== 'undefined' && elem !== null) {
+        var elem = document.getElementById(elmId);        
+        if(typeof elem !== 'undefined' && elem !== null && elem.value !== "") {          
           return true;
         }
         return false;
