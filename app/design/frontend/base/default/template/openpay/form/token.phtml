@@ -1,7 +1,16 @@
 <script type="text/javascript">
     //<![CDATA[
-    // create openpay device session id for fraud prevention
+    
+    OpenPay.setId('<?php echo Mage::getStoreConfig('payment/common/merchantid'); ?>');
+    OpenPay.setApiKey('<?php echo Mage::getStoreConfig('payment/common/publickey'); ?>');
+
+    <?php if (Mage::getStoreConfig('payment/common/sandbox')): ?>
+        OpenPay.setSandboxMode(true);
+    <?php endif; ?>
+        
+    // create openpay device session id for fraud prevention        
     var deviceSessionId = OpenPay.deviceData.setup();
+    
     var oneStepForm = document.getElementById("onestepcheckout-form");
     var oneStepFormTwo = document.getElementById("one-step-checkout-form");
     var oneStepFormThree = document.getElementById("co-form");
@@ -14,17 +23,36 @@
                 processPayment();
             }
         });
+        
+        var total = <?php echo Mage::helper('checkout/cart')->getQuote()->getGrandTotal() ?>;
+        
+        jQuery(document).on("change", "#charges_interest_free", function() {        
+            var monthly_payment = 0;
+            var months = parseInt(jQuery(this).val());     
+
+            if (months > 1) {
+                jQuery("#total-monthly-payment").css("display", "inline");
+            } else {
+                jQuery("#total-monthly-payment").css("display", "none");
+            }
+
+            monthly_payment = total/months;
+            monthly_payment = monthly_payment.toFixed(2);
+            
+            jQuery("#monthly-payment").text(monthly_payment);
+        });
+        
     });
     
-    var processPayment = function () {
+    var processPayment = function () {        
         var currentMethod = getPaymentMethod();
-        if (currentMethod == 'charges') {
-            if (isCardValid()) {
+        if (currentMethod === 'charges') {
+            if (isCardValid()) {                
                 createOpenpayToken();
-            } else {
+            } else {                
                 openpayTempSave();
             }
-        } else {
+        } else {            
             openpayTempSave();
         }
     }
@@ -101,15 +129,7 @@
     }
 
     function createOpenpayToken() {
-        
-        OpenPay.setId('<?php echo Mage::getStoreConfig('payment/common/merchantid'); ?>');
-        OpenPay.setApiKey('<?php echo Mage::getStoreConfig('payment/common/publickey'); ?>');
-
-        <?php if (Mage::getStoreConfig('payment/common/sandbox')): ?>
-            OpenPay.setSandboxMode(true);
-        <?php endif; ?>
-        <?php $_billingInfo = Mage::getSingleton('checkout/session')->getQuote()->getBillingAddress()->getData(); ?>
-        <?php $_streetInfo = explode("\n", $_billingInfo['street'], 2); ?>
+                        
         var expiration_year = document.getElementById('charges_expiration_yr').value.toString();
 
         var cardNumber = new String(document.getElementById('charges_cc_number').value);
@@ -147,26 +167,16 @@
         
     }
 
-    function isCardValid() {
-        
-        var expMonth = document.getElementById('charges_expiration').value;
-        var expYear = document.getElementById('charges_expiration_yr').value;
-        var cardNumber = new String(document.getElementById('charges_cc_number').value);
-        cardNumber = cardNumber.toString().replace(/\s/g, '');
-        var e = document.getElementById("charges_cc_type");
-        var selectedType = e.options[e.selectedIndex].innerHTML;
+    function isCardValid() {        
+        var validator = null;
                 
-        if(oneStepFormThree != null){
-            var validator = new Validation('co-form');
-        }else{
-            var validator = oneStepFormTwo == null ? new Validation(payment.form) : new Validation('one-step-checkout-form');
+        if(oneStepFormThree !== null){
+            validator = new Validation('co-form');            
+        }else{            
+            validator = oneStepFormTwo === null ? new Validation(payment.form) : new Validation('one-step-checkout-form');
         }        
         
-        // simply validate card details with openpay.js methods and magento's propietary ones
-        if (OpenPay.card.validateExpiry(expMonth, expYear) &&
-                OpenPay.card.validateAcceptCardNumber(cardNumber) &&
-                OpenPay.card.cardType(cardNumber).toLowerCase() == selectedType.toLowerCase() &&
-                validator.validate()) {            
+        if (validator.validate()) {              
             return true;
         } else {
             return false;
@@ -266,7 +276,7 @@
         var openpayTempSave = function () {
             openpayPaymentSave.apply(payment);
         }
-        payment.save = function () {            
+        payment.save = function () {                  
             processPayment();
         }
     }
@@ -282,8 +292,8 @@
     }
     
     function validateElement(elmId) {
-        var elem = document.getElementById(elmId);        
-        if(typeof elem !== 'undefined' && elem !== null && elem.value !== "") {          
+        var elem = document.getElementById(elmId);
+        if(typeof elem !== 'undefined' && elem !== null) {
           return true;
         }
         return false;
