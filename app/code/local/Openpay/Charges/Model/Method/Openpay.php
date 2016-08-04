@@ -322,7 +322,7 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
             'method' => 'card',
             'amount' => $amount,
             'description' => $this->_getHelper()->__($orderFirstItem->getName()).(($numItems > 1) ? $this->_getHelper()->__('... and (%d) other items', $numItems - 1) : ''),            
-            //'order_id' => $order->getIncrementId(),            
+            'order_id' => $order->getIncrementId(),            
             'capture' => $capture
         );
         
