@@ -91,30 +91,22 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
 
     }
 
-    public function validate(){
+    public function validate() {
 
         $info = $this->getInfoInstance();
         $errorMsg = false;
         $availableTypes = explode(',',$this->getConfigData('cctypes'));
-
-        $ccNumber = $info->getCcNumber();
-
-        // remove credit card number delimiters such as "-" and space
-        $ccNumber = preg_replace('/[\-\s]+/', '', $ccNumber);
-        $info->setCcNumber($ccNumber);
-
-        /* CC_number validation is not done because it should not get into the server */
-
-        Mage::log("Numero de tarjeta ". $ccNumber);
+        
         Mage::log("Tarjetas soportadas ". $this->getConfigData('cctypes'));
         Mage::log("Tarjetas seleccionada ". $info->getCcType());
 
+        /** CC_number validation is not done because it should not get into the server **/
         if (!in_array($info->getCcType(), $availableTypes)){
-            $errorMsg = Mage::helper('payment')->__('Tipo de arjeta no soportada');
+            $errorMsg = Mage::helper('payment')->__('Tipo de tarjeta no soportada');
         }
 
-        // Verify they are not sending sensitive information
-        if($info->getCcExpYear() <> null || $info->getCcExpMonth() <> null || $info->getCcCidEnc() <> null){
+        /** Verify they are not sending sensitive information **/
+        if($info->getCcExpYear() <> null || $info->getCcExpMonth() <> null || $info->getCcCidEnc() <> null || $info->getCcNumber() <> null){
             $errorMsg = Mage::helper('payment')->__('Your checkout form is sending sensitive information to the server. Please contact your developer to fix this security leak.');
         }
 
@@ -330,7 +322,7 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
             'method' => 'card',
             'amount' => $amount,
             'description' => $this->_getHelper()->__($orderFirstItem->getName()).(($numItems > 1) ? $this->_getHelper()->__('... and (%d) other items', $numItems - 1) : ''),            
-            'order_id' => $order->getIncrementId(),            
+            //'order_id' => $order->getIncrementId(),            
             'capture' => $capture
         );
         
