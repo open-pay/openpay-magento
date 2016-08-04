@@ -1,7 +1,16 @@
 <script type="text/javascript">
     //<![CDATA[
-    // create openpay device session id for fraud prevention
+    
+    OpenPay.setId('<?php echo Mage::getStoreConfig('payment/common/merchantid'); ?>');
+    OpenPay.setApiKey('<?php echo Mage::getStoreConfig('payment/common/publickey'); ?>');
+
+    <?php if (Mage::getStoreConfig('payment/common/sandbox')): ?>
+        OpenPay.setSandboxMode(true);
+    <?php endif; ?>
+        
+    // create openpay device session id for fraud prevention        
     var deviceSessionId = OpenPay.deviceData.setup();
+    
     var oneStepForm = document.getElementById("onestepcheckout-form");
     var oneStepFormTwo = document.getElementById("one-step-checkout-form");
     var oneStepFormThree = document.getElementById("co-form");
@@ -35,15 +44,12 @@
         
     });
     
-    var processPayment = function () {
-        console.log('processPayment');
+    var processPayment = function () {        
         var currentMethod = getPaymentMethod();
         if (currentMethod === 'charges') {
-            if (isCardValid()) {
-                console.log('createOpenpayToken');
+            if (isCardValid()) {                
                 createOpenpayToken();
-            } else {
-                console.log('openpayTempSave');
+            } else {                
                 openpayTempSave();
             }
         } else {            
@@ -55,9 +61,10 @@
         // set openpay values to be saved in db
         document.getElementById('charges_card_token').value = e.data.id;
         document.getElementById('charges_device_session_id').value = deviceSessionId;
-                
+        
         // Se elimina el valor de la tarjeta de crédito para que no sea enviado al servidor
         document.getElementById('charges_cc_number').value = '';
+        console.log('charges_cc_number');
         
         if (window["IWD"] && IWD.OPC) {
             openpayTempSave();
@@ -126,18 +133,9 @@
     }
 
     function createOpenpayToken() {
-        
-        console.log('<?php echo Mage::getStoreConfig('payment/common/merchantid'); ?>');
-        console.log('<?php echo Mage::getStoreConfig('payment/common/publickey'); ?>');
-        
-        OpenPay.setId('<?php echo Mage::getStoreConfig('payment/common/merchantid'); ?>');
-        OpenPay.setApiKey('<?php echo Mage::getStoreConfig('payment/common/publickey'); ?>');
-
-        <?php if (Mage::getStoreConfig('payment/common/sandbox')): ?>
-            OpenPay.setSandboxMode(true);
-        <?php endif; ?>
-            
+                        
         var expiration_year = document.getElementById('charges_expiration_yr').value.toString();
+
         var cardNumber = new String(document.getElementById('charges_cc_number').value);
         cardNumber = cardNumber.toString().replace(/\s/g, '');
 

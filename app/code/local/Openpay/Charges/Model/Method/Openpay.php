@@ -47,7 +47,6 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
         if (is_array($data)) {
             $data = new Varien_Object($data);
         }
-        
         try {
             $paymentRequest = Mage::app()->getRequest()->getPost('payment');
             $data->addData(array(
@@ -89,6 +88,7 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
             ->setCcCidEnc(null)
             ->setCcExpMonth(null);
         return $this;
+
     }
 
     public function validate(){
@@ -110,7 +110,7 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
         Mage::log("Tarjetas seleccionada ". $info->getCcType());
 
         if (!in_array($info->getCcType(), $availableTypes)){
-            $errorMsg = Mage::helper('payment')->__('Tipo de tarjeta no soportada');
+            $errorMsg = Mage::helper('payment')->__('Tipo de arjeta no soportada');
         }
 
         // Verify they are not sending sensitive information
@@ -231,16 +231,8 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
                     $charge = $this->_chargeCardInOpenpay($payment, $amount, $token, $device_session_id, $capture);
                     break;
             }
-        } catch (OpenpayApiTransactionError $e) {
-            Mage::throwException(Mage::helper('payment')->__('La tarjeta fue declinada, por favor verifique la información o intente con otra tarjeta'));
-        } catch (OpenpayApiRequestError $e) {
-           Mage::throwException(Mage::helper('payment')->__($e->getMessage()));
-        } catch (OpenpayApiConnectionError $e) {
-            Mage::throwException(Mage::helper('payment')->__($e->getMessage()));
-        } catch (OpenpayApiAuthError $e) {
-            Mage::throwException(Mage::helper('payment')->__($e->getMessage()));
-        } catch (OpenpayApiError $e) {
-            Mage::throwException(Mage::helper('payment')->__($e->getMessage()));
+        } catch (Exception $e) {
+            $this->error($e);            
         }
 
         // Set Openpay confirmation number as Order_Payment openpay_token
@@ -338,7 +330,7 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
             'method' => 'card',
             'amount' => $amount,
             'description' => $this->_getHelper()->__($orderFirstItem->getName()).(($numItems > 1) ? $this->_getHelper()->__('... and (%d) other items', $numItems - 1) : ''),            
-            'order_id' => $order->getIncrementId(),
+            'order_id' => $order->getIncrementId(),            
             'capture' => $capture
         );
         
@@ -346,9 +338,9 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
             $chargeData['payment_plan'] = array('payments' => (int)$interest_free);
         }        
 
-        $customer = $this->_openpay->customers->get($user_id);
+        $customer = $this->_openpay->customers->get($user_id);        
         $charge = $customer->charges->create($chargeData);
-
+        
         return $charge;
     }
 
@@ -429,4 +421,56 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
 
         $charge->refund($refundData);
     }
+    
+    public function error($e)
+    {        
+        switch ($e->getErrorCode()) {
+             /* ERRORES GENERALES */
+            case '1000':
+            case '1004':
+            case '1005':
+                $msg = 'Servicio no disponible.';
+                break;
+            /* ERRORES TARJETA */
+            case '3001':
+            case '3004':
+            case '3005':
+            case '3007':
+                $msg = 'La tarjeta fue rechazada.';
+                break;
+            case '3002':
+                $msg = 'La tarjeta ha expirado.';
+                break;
+            case '3003':
+                $msg = 'La tarjeta no tiene fondos suficientes.';
+                break;
+            case '3006':
+                $msg = 'La operación no esta permitida para este cliente o esta transacción.';
+                break;
+            case '3008':
+                $msg = 'La tarjeta no es soportada en transacciones en línea.';
+                break;
+            case '3009':
+                $msg = 'La tarjeta fue reportada como perdida.';
+                break;
+            case '3010':
+                $msg = 'El banco ha restringido la tarjeta.';
+                break;
+            case '3011':
+                $msg = 'El banco ha solicitado que la tarjeta sea retenida. Contacte al banco.';
+                break;
+            case '3012':
+                $msg = 'Se requiere solicitar al banco autorización para realizar este pago.';
+                break;
+            default: /* Demás errores 400 */
+                //$msg = 'La petición no pudo ser procesada.';
+                $msg = $e->getDescription();
+                break;
+        }
+        
+        $error = 'ERROR '.$e->getErrorCode().'. '.$msg;        
+        Mage::throwException(Mage::helper('payment')->__($error));
+        
+    }
+    
 }
