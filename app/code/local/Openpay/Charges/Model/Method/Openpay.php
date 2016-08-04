@@ -15,7 +15,7 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
 {
     protected $_code          = 'charges';
     protected $_openpay;
-    protected $_canSaveCc     = true;
+    protected $_canSaveCc     = false;
 
     protected $_canRefund                   = true;
     protected $_isGateway                   = true;
@@ -47,10 +47,11 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
         if (is_array($data)) {
             $data = new Varien_Object($data);
         }
+        
         try {
             $paymentRequest = Mage::app()->getRequest()->getPost('payment');
             $data->addData(array(
-                'cc_last4' => substr($data->cc_number, -4),
+                'cc_last4' => '',
                 'cc_exp_year' => '',
                 'cc_exp_month' => '',
             ));
@@ -58,8 +59,14 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
 
             $this->_openpay_token       = $paymentRequest['openpay_token'];
             $this->_device_session_id   = $paymentRequest['device_session_id'];
+            $this->_interest_free = null;
+            
+            if(isset($paymentRequest['interest_free'])){
+                $this->_interest_free = $paymentRequest['interest_free'];
+            }
 
-            $info->setOpenpayToken($paymentRequest['openpay_token'])->setDeviceSessionId($paymentRequest['device_session_id']);
+            $info->setOpenpayToken($paymentRequest['openpay_token'])->setDeviceSessionId($paymentRequest['device_session_id'])->setInterestFree($paymentRequest['interest_free']);
+            
         } catch (Exception $e) {}
 
         return parent::assignData($data);
@@ -77,12 +84,11 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
             $info->setCcNumberEnc($info->encrypt($info->getCcNumber()));
         }
 
-        $info->setCcCid('')
-            ->setCcExpYear('')
-            ->setCcCidEnc('')
-            ->setCcExpMonth('');
+        $info->setCcCid(null)
+            ->setCcExpYear(null)
+            ->setCcCidEnc(null)
+            ->setCcExpMonth(null);
         return $this;
-
     }
 
     public function validate(){
@@ -104,7 +110,7 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
         Mage::log("Tarjetas seleccionada ". $info->getCcType());
 
         if (!in_array($info->getCcType(), $availableTypes)){
-            $errorMsg = Mage::helper('payment')->__('Tipo de arjeta no soportada');
+            $errorMsg = Mage::helper('payment')->__('Tipo de tarjeta no soportada');
         }
 
         // Verify they are not sending sensitive information
@@ -139,7 +145,7 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
 
     public function capture(Varien_Object $payment, $amount){
 
-        Mage::log('capture:'.$payment);
+        //Mage::log('capture:'.$payment);
         if(!$payment->hasOpenpayPaymentId()){
             $this->_doOpenpayTransaction($payment, $amount, true);
         }else{
@@ -192,11 +198,16 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
         $paymentRequest = Mage::app()->getRequest()->getPost('payment');
         $token = $paymentRequest['openpay_token'];
         $device_session_id = $paymentRequest['device_session_id'];
+        $interest_free = null;
+        
+        if(isset($paymentRequest['interest_free'])){
+            $interest_free = $paymentRequest['interest_free'];
+        }
 
         try {
             switch ($checkout_method){
                 case Mage_Sales_Model_Quote::CHECKOUT_METHOD_GUEST:
-                    $charge = $this->_chargeCardInOpenpay($payment, $amount, $token, $device_session_id, $capture);
+                    $charge = $this->_chargeCardInOpenpay($payment, $amount, $token, $device_session_id, $capture, $interest_free);
                     break;
 
                 case Mage_Sales_Model_Quote::CHECKOUT_METHOD_LOGIN_IN:
@@ -209,12 +220,11 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
                         $openpay_user = $this->_createOpenpayCustomer($customer, $shippingAddress);
                         $customer->setOpenpayUserId($openpay_user->id);
                         $customer->save();
-
-                        $charge = $this->_chargeOpenpayCustomer($payment, $amount, $token, $openpay_user->id, $device_session_id, $capture);
                     }else{
-                        $openpay_user = $this->_getOpenpayCustomer($customer->openpay_user_id);
-                        $charge = $this->_chargeOpenpayCustomer($payment, $amount, $token, $openpay_user->id, $device_session_id, $capture);
+                        $openpay_user = $this->_getOpenpayCustomer($customer->openpay_user_id);                        
                     }
+                    
+                    $charge = $this->_chargeOpenpayCustomer($payment, $amount, $token, $openpay_user->id, $device_session_id, $capture, $interest_free);
                     break;
 
                 default:
@@ -238,6 +248,7 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
         $payment->setOpenpayCreationDate($charge->creation_date);
         $payment->setOpenpayPaymentId($charge->id);
         $payment->setTransactionId($charge->id);
+        $payment->setData('cc_last4', $charge->card->card_number);
 
         return $this;
     }
@@ -264,7 +275,7 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
     /*
      * Charge Card using OpenPay
      */
-    protected function _chargeCardInOpenpay($payment, $amount, $token, $device_session_id, $capture){
+    protected function _chargeCardInOpenpay($payment, $amount, $token, $device_session_id, $capture, $interest_free){
 
         $order = $payment->getOrder();
         $orderFirstItem = $order->getItemById(0);
@@ -276,32 +287,34 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
             'source_id' => $token,
             'device_session_id' => $device_session_id,
             'amount' => (float) $amount,
-            'description' => $this->_getHelper()->__($orderFirstItem->getName())
-                .(($numItems>1)?$this->_getHelper()->__('... and (%d) other items', $numItems-1): ''),
-            'order_id' => $order->getIncrementId(),
-            'capture' => $capture
+            'description' => $this->_getHelper()->__($orderFirstItem->getName()).(($numItems>1)?$this->_getHelper()->__('... and (%d) other items', $numItems-1): ''),            
+            //'order_id' => $order->getIncrementId(),
+            //'capture' => $capture
         );
+        
+        if($interest_free > 1){
+            $chargeData['payment_plan'] = array('payments' => (int)$interest_free);
+        }        
 
         $billingAddress = $payment->getOrder()->getBillingAddress();
-        $shippingAddress = $payment->getOrder()->getShippingAddress();
-
+        //$shippingAddress = $payment->getOrder()->getShippingAddress();
         
         $chargeCustomer = array(          
-            'name' => $shippingAddress->getFirstname(),
-            'last_name' => $shippingAddress->getLastname(),
+            'name' => $billingAddress->getFirstname(),
+            'last_name' => $billingAddress->getLastname(),
             'email' => $billingAddress->getEmail(),
             'requires_account' => false,
-            'phone_number' => $shippingAddress->getTelephone()            
+            'phone_number' => $billingAddress->getTelephone()            
          );
-        
+                
         // Validate all required data for Customer's Address object
-        if($shippingAddress->getStreet() && $shippingAddress->getRegion() && $shippingAddress->getCity() && $shippingAddress->getCountry_id() && $shippingAddress->getPostcode()){
+        if($billingAddress->getStreet() && $billingAddress->getRegion() && $billingAddress->getCity() && $billingAddress->getCountry_id() && $billingAddress->getPostcode()){
             $chargeCustomer['address'] =  array(
-                'line1' => implode(' ', $shippingAddress->getStreet()),
-                'state' => $shippingAddress->getRegion(),
-                'city' => $shippingAddress->getCity(),
-                'postal_code' => $shippingAddress->getPostcode(),
-                'country_code' => $shippingAddress->getCountry_id()
+                'line1' => implode(' ', $billingAddress->getStreet()),
+                'state' => $billingAddress->getRegion(),
+                'city' => $billingAddress->getCity(),
+                'postal_code' => $billingAddress->getPostcode(),
+                'country_code' => $billingAddress->getCountry_id()
             );
         }
               
@@ -312,22 +325,26 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
 
         return $charge;
     }
-    protected function _chargeOpenpayCustomer($payment, $amount, $token, $user_id, $device_session_id, $capture = true){
+    
+    protected function _chargeOpenpayCustomer($payment, $amount, $token, $user_id, $device_session_id, $capture, $interest_free){
 
         $order = $payment->getOrder();
         $orderFirstItem = $order->getItemById(0);
         $numItems = $order->getTotalItemCount();
 
         $chargeData = array(
-
             'source_id' => $token,
             'device_session_id' => $device_session_id,
             'method' => 'card',
             'amount' => $amount,
-            'description' => $this->_getHelper()->__($orderFirstItem->getName())
-                .(($numItems>1)?$this->_getHelper()->__('... and (%d) other items', $numItems-1): ''),
-            'order_id' => $order->getIncrementId(),
-            'capture' => $capture);
+            'description' => $this->_getHelper()->__($orderFirstItem->getName()).(($numItems > 1) ? $this->_getHelper()->__('... and (%d) other items', $numItems - 1) : ''),            
+            //'order_id' => $order->getIncrementId(),
+            //'capture' => $capture
+        );
+        
+        if($interest_free > 1){
+            $chargeData['payment_plan'] = array('payments' => (int)$interest_free);
+        }        
 
         $customer = $this->_openpay->customers->get($user_id);
         $charge = $customer->charges->create($chargeData);
@@ -358,9 +375,7 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
             );
         }        
 
-        $customer = $this->_openpay->customers->add($customerData);
-
-        return $customer;
+        return $this->_openpay->customers->add($customerData);
     }
 
     protected function _getOpenpayCustomer($user_token){

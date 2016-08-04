@@ -14,17 +14,40 @@
                 processPayment();
             }
         });
+        
+        var total = <?php echo Mage::helper('checkout/cart')->getQuote()->getGrandTotal() ?>;
+        
+        jQuery(document).on("change", "#charges_interest_free", function() {        
+            var monthly_payment = 0;
+            var months = parseInt(jQuery(this).val());     
+
+            if (months > 1) {
+                jQuery("#total-monthly-payment").css("display", "inline");
+            } else {
+                jQuery("#total-monthly-payment").css("display", "none");
+            }
+
+            monthly_payment = total/months;
+            monthly_payment = monthly_payment.toFixed(2);
+            
+            jQuery("#monthly-payment").text(monthly_payment);
+        });
+        
     });
     
     var processPayment = function () {
+        console.log('processPayment');
         var currentMethod = getPaymentMethod();
-        if (currentMethod == 'charges') {
+        if (currentMethod === 'charges') {
             if (isCardValid()) {
+                console.log('createOpenpayToken');
                 createOpenpayToken();
             } else {
+                console.log('openpayTempSave');
                 openpayTempSave();
             }
         } else {
+            console.log('openpayTempSave2');
             openpayTempSave();
         }
     }
@@ -33,6 +56,9 @@
         // set openpay values to be saved in db
         document.getElementById('charges_card_token').value = e.data.id;
         document.getElementById('charges_device_session_id').value = deviceSessionId;
+                
+        // Se elimina el valor de la tarjeta de crédito para que no sea enviado al servidor
+        document.getElementById('charges_cc_number').value = '';
         
         if (window["IWD"] && IWD.OPC) {
             openpayTempSave();
@@ -102,6 +128,9 @@
 
     function createOpenpayToken() {
         
+        console.log('<?php echo Mage::getStoreConfig('payment/common/merchantid'); ?>');
+        console.log('<?php echo Mage::getStoreConfig('payment/common/publickey'); ?>');
+        
         OpenPay.setId('<?php echo Mage::getStoreConfig('payment/common/merchantid'); ?>');
         OpenPay.setApiKey('<?php echo Mage::getStoreConfig('payment/common/publickey'); ?>');
 
@@ -147,26 +176,16 @@
         
     }
 
-    function isCardValid() {
-        
-        var expMonth = document.getElementById('charges_expiration').value;
-        var expYear = document.getElementById('charges_expiration_yr').value;
-        var cardNumber = new String(document.getElementById('charges_cc_number').value);
-        cardNumber = cardNumber.toString().replace(/\s/g, '');
-        var e = document.getElementById("charges_cc_type");
-        var selectedType = e.options[e.selectedIndex].innerHTML;
+    function isCardValid() {        
+        var validator = null;
                 
-        if(oneStepFormThree != null){
-            var validator = new Validation('co-form');
-        }else{
-            var validator = oneStepFormTwo == null ? new Validation(payment.form) : new Validation('one-step-checkout-form');
+        if(oneStepFormThree !== null){
+            validator = new Validation('co-form');            
+        }else{            
+            validator = oneStepFormTwo === null ? new Validation(payment.form) : new Validation('one-step-checkout-form');
         }        
         
-        // simply validate card details with openpay.js methods and magento's propietary ones
-        if (OpenPay.card.validateExpiry(expMonth, expYear) &&
-                OpenPay.card.validateAcceptCardNumber(cardNumber) &&
-                OpenPay.card.cardType(cardNumber).toLowerCase() == selectedType.toLowerCase() &&
-                validator.validate()) {            
+        if (validator.validate()) {              
             return true;
         } else {
             return false;
@@ -266,7 +285,8 @@
         var openpayTempSave = function () {
             openpayPaymentSave.apply(payment);
         }
-        payment.save = function () {            
+        payment.save = function () {      
+            console.log('fede');
             processPayment();
         }
     }
@@ -282,8 +302,8 @@
     }
     
     function validateElement(elmId) {
-        var elem = document.getElementById(elmId);        
-        if(typeof elem !== 'undefined' && elem !== null && elem.value !== "") {          
+        var elem = document.getElementById(elmId);
+        if(typeof elem !== 'undefined' && elem !== null) {
           return true;
         }
         return false;

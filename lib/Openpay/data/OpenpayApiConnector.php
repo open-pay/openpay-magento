@@ -59,6 +59,9 @@ class OpenpayApiConnector {
 		//$params = self::_encodeObjects($params);
 		$headers = array('User-Agent: OpenpayPhp/v1');
 	
+		Mage::log('ID '. $myId . ' KEY ' . $myApiKey);
+		Mage::log('URL '. $absUrl);
+	
 		list($rbody, $rcode) = $this->_curlRequest($method, $absUrl, $headers, $params, $myApiKey);
 		return $this->interpretResponse($rbody, $rcode);
 	}

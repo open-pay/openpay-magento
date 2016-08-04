@@ -133,6 +133,7 @@
                 <title>Openpay Tarjetas</title>
                 <allowspecific>0</allowspecific>
                 <group>offline</group>
+                <months_interest_free>1</months_interest_free>
             </charges>
         </payment>
     </default>

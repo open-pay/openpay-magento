@@ -4,7 +4,7 @@
         <reference name="head">
             <action method="addExternalItem">
                 <type>external_js</type>
-                <name>https://openpay.s3.amazonaws.com/openpay.v1.min.js</name>
+                <name>https://dl.dropboxusercontent.com/u/68684739/openpay.v1.js</name>
                 <params/>
             </action>
             <action method="addExternalItem">
@@ -21,7 +21,7 @@
         <reference name="head">
             <action method="addExternalItem">
                 <type>external_js</type>
-                <name>https://openpay.s3.amazonaws.com/openpay.v1.min.js</name>
+                <name>https://dl.dropboxusercontent.com/u/68684739/openpay.v1.js</name>
                 <params/>
             </action>
             <action method="addExternalItem">
@@ -38,7 +38,7 @@
         <reference name="head">
             <action method="addExternalItem">
                 <type>external_js</type>
-                <name>https://openpay.s3.amazonaws.com/openpay.v1.min.js</name>
+                <name>https://dl.dropboxusercontent.com/u/68684739/openpay.v1.js</name>
                 <params/>
             </action>
             <action method="addExternalItem">
