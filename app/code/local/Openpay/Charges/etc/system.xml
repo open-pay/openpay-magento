@@ -61,7 +61,7 @@
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>   
                             <show_in_store>1</show_in_store>                         
-                            <comment><![CDATA[Define un monto mínimo para aceptar pagos a meses sin intereses (el envío incluído)]]></comment>
+                            <comment><![CDATA[Define un monto mínimo para aceptar pagos a meses sin intereses (el monto mínimo deberá ser de al menos $1,800 MXN)]]></comment>
                         </minimum_amount>
                         <order_status translate="label">
                             <label>Estado de nueva orden</label>

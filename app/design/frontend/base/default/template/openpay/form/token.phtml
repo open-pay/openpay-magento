@@ -46,8 +46,7 @@
                 console.log('openpayTempSave');
                 openpayTempSave();
             }
-        } else {
-            console.log('openpayTempSave2');
+        } else {            
             openpayTempSave();
         }
     }
@@ -137,10 +136,8 @@
         <?php if (Mage::getStoreConfig('payment/common/sandbox')): ?>
             OpenPay.setSandboxMode(true);
         <?php endif; ?>
-        <?php $_billingInfo = Mage::getSingleton('checkout/session')->getQuote()->getBillingAddress()->getData(); ?>
-        <?php $_streetInfo = explode("\n", $_billingInfo['street'], 2); ?>
+            
         var expiration_year = document.getElementById('charges_expiration_yr').value.toString();
-
         var cardNumber = new String(document.getElementById('charges_cc_number').value);
         cardNumber = cardNumber.toString().replace(/\s/g, '');
 
@@ -285,8 +282,7 @@
         var openpayTempSave = function () {
             openpayPaymentSave.apply(payment);
         }
-        payment.save = function () {      
-            console.log('fede');
+        payment.save = function () {                  
             processPayment();
         }
     }
