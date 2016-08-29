@@ -106,7 +106,8 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
         }
 
         /** Verify they are not sending sensitive information **/
-        if($info->getCcExpYear() <> null || $info->getCcExpMonth() <> null || $info->getCcCidEnc() <> null || $info->getCcNumber() <> null){
+        //if($info->getCcExpYear() <> null || $info->getCcExpMonth() <> null || $info->getCcCidEnc() <> null || $info->getCcNumber() <> null){
+        if($info->getCcExpYear() <> null || $info->getCcExpMonth() <> null || $info->getCcCidEnc() <> null){
             $errorMsg = Mage::helper('payment')->__('Your checkout form is sending sensitive information to the server. Please contact your developer to fix this security leak.');
         }
 
