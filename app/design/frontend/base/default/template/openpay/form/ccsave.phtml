@@ -29,7 +29,7 @@
     //$months = Mage::getStoreConfig('payment/charges/months_interest_free'); 
     //$total = Mage::helper('checkout/cart')->getQuote()->getGrandTotal();
 ?>
-<?php    
+<?php        
     $minimum_amount = $this->getMethod()->getConfigData('minimum_amount');
     $months = $this->getMethod()->getConfigData('months_interest_free');
     $months_array = explode(',', $months);

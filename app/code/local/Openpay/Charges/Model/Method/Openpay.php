@@ -88,21 +88,23 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
             ->setCcCidEnc(null)
             ->setCcExpMonth(null);
         return $this;
-
     }
 
     public function validate() {
+        
+        //parent::validate();
+        /* we call parent's validate() function!
+         * if the code got this far, it means the cc type is none of the supported
+         * ones implemented by Magento and now it gets interesting
+         */
 
         $info = $this->getInfoInstance();
         $errorMsg = false;
         $availableTypes = explode(',',$this->getConfigData('cctypes'));
         
-        Mage::log("Tarjetas soportadas ". $this->getConfigData('cctypes'));
-        Mage::log("Tarjetas seleccionada ". $info->getCcType());
-
         /** CC_number validation is not done because it should not get into the server **/
         if (!in_array($info->getCcType(), $availableTypes)){
-            $errorMsg = Mage::helper('payment')->__('Tipo de tarjeta no soportada');
+            $errorMsg = Mage::helper('payment')->__('Credit card type is not allowed for this payment method.');
         }
 
         /** Verify they are not sending sensitive information **/
@@ -111,13 +113,27 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
             $errorMsg = Mage::helper('payment')->__('Your checkout form is sending sensitive information to the server. Please contact your developer to fix this security leak.');
         }
 
+        // Carnet
+        $ccNumber = $info->getCcNumber();
+        /* this is Carnet regex pattern.
+         * it's different for every cc type, so beware
+         */
+        if($info->getCcType()=='CN' && !preg_match('/^[0-9]{16}$/', $ccNumber)){
+            Mage::throwException($this->_getHelper()->__('Credit card number mismatch with credit card type.'));
+        }
+        // now we retrieve our CCV regex pattern and validate against it
+        $verificationRegex = $this->getVerificationRegEx();
+        if(!preg_match($verificationRegex[$info->getCcType()], $info->getCcCid())) {
+            $errorMsg = Mage::getHelper()->__('Please enter a valid credit card verification number.');            
+        }
+        
         if($errorMsg){
             Mage::throwException($errorMsg);
         }
 
         return $this;
     }
-
+    
     /**
      * Authorize payment abstract method
      *
@@ -128,7 +144,7 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
      */
     public function authorize(Varien_Object $payment, $amount)
     {
-        // Leave the transaction opened so it can later be captured in backend
+        // Leave the transaction opened so it can later be captured in backend        
         $payment->setIsTransactionClosed(false);
 
         $this->_doOpenpayTransaction($payment, $amount, false);
@@ -137,14 +153,13 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
     }
 
     public function capture(Varien_Object $payment, $amount){
-
-        //Mage::log('capture:'.$payment);
+        
         if(!$payment->hasOpenpayPaymentId()){
             $this->_doOpenpayTransaction($payment, $amount, true);
         }else{
             $this->_captureOpenpayTransaction($payment, $amount);
         }
-
+        
         return $this;
     }
 
@@ -164,6 +179,7 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
 
         return $this;
     }
+    
     public function cancel(Varien_Object $payment){
 
         // void the order if canceled
@@ -171,6 +187,7 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
 
         return $this;
     }
+    
     public function void(Varien_Object $payment){
 
         $order = $payment->getOrder();
@@ -184,9 +201,10 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
 
         return $this;
     }
-    protected function _doOpenpayTransaction(Varien_Object $payment, $amount, $capture = true){
+    
+    protected function _doOpenpayTransaction(Varien_Object $payment, $amount, $capture = true, $use_3d_secure = false){
 
-        /* Take actions for the different checkout methods */
+        /* Take actions for the different checkout methods */        
         $checkout_method = $payment->getOrder()->getQuote()->getCheckoutMethod();
         $paymentRequest = Mage::app()->getRequest()->getPost('payment');
         $token = $paymentRequest['openpay_token'];
@@ -196,11 +214,14 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
         if(isset($paymentRequest['interest_free'])){
             $interest_free = $paymentRequest['interest_free'];
         }
-
+        
+        Mage::log('_doOpenpayTransaction TOKEN: '.$token);
+        Mage::log('_doOpenpayTransaction DSI: '.$device_session_id);
+                
         try {
             switch ($checkout_method){
                 case Mage_Sales_Model_Quote::CHECKOUT_METHOD_GUEST:
-                    $charge = $this->_chargeCardInOpenpay($payment, $amount, $token, $device_session_id, $capture, $interest_free);
+                    $charge = $this->_chargeCardInOpenpay($payment, $amount, $token, $device_session_id, $capture, $interest_free, $use_3d_secure);
                     break;
 
                 case Mage_Sales_Model_Quote::CHECKOUT_METHOD_LOGIN_IN:
@@ -217,25 +238,40 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
                         $openpay_user = $this->_getOpenpayCustomer($customer->openpay_user_id);                        
                     }
                     
-                    $charge = $this->_chargeOpenpayCustomer($payment, $amount, $token, $openpay_user->id, $device_session_id, $capture, $interest_free);
+                    $charge = $this->_chargeOpenpayCustomer($payment, $amount, $token, $openpay_user->id, $device_session_id, $capture, $interest_free, $use_3d_secure);
                     break;
 
                 default:
                     $charge = $this->_chargeCardInOpenpay($payment, $amount, $token, $device_session_id, $capture);
                     break;
             }
+            
+            // Set Openpay confirmation number as Order_Payment openpay_token        
+            $payment->setOpenpayAuthorization($charge->authorization);
+            $payment->setOpenpayCreationDate($charge->creation_date);
+            $payment->setOpenpayPaymentId($charge->id);
+            $payment->setTransactionId($charge->id);
+            $payment->setData('cc_last4', $charge->card->card_number);
+
+            // Si la transacción utiliza 3D Secure se realiza el redireccionamiento
+            if($charge->status == 'charge_pending' && ($charge->payment_method && $charge->payment_method->type == 'redirect')) {
+                Mage::log('Redirect URL: '.$charge->payment_method->url);                        
+                $payment->setData('openpay_3d_secure', 1);
+                $payment->setData('openpay_3d_secure_url', $charge->payment_method->url);      
+                $payment->save();                    
+            }       
+
+            return $this;                        
         } catch (Exception $e) {
-            $this->error($e);            
-        }
-
-        // Set Openpay confirmation number as Order_Payment openpay_token
-        $payment->setOpenpayAuthorization($charge->authorization);
-        $payment->setOpenpayCreationDate($charge->creation_date);
-        $payment->setOpenpayPaymentId($charge->id);
-        $payment->setTransactionId($charge->id);
-        $payment->setData('cc_last4', $charge->card->card_number);
-
-        return $this;
+            
+            $use_3d_secure = Mage::getStoreConfig('payment/charges/use_3d_secure') == '1' ? true : false;            
+            if($e->getErrorCode() == '3005' && $use_3d_secure) {                      
+                $this->_doOpenpayTransaction($payment, $amount, $capture, $use_3d_secure);                
+            } else {                
+                $this->error($e);            
+            }                        
+        }        
+        
     }
 
     /*
@@ -244,7 +280,7 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
     protected function _setOpenpayObject(){
         /* Create OpenPay object */
         $this->_openpay = Openpay::getInstance(Mage::getStoreConfig('payment/common/merchantid'), Mage::getStoreConfig('payment/common/privatekey'));
-         Openpay::setProductionMode(!Mage::getStoreConfig('payment/common/sandbox'));
+        Openpay::setProductionMode(!Mage::getStoreConfig('payment/common/sandbox'));
     }
 
     /**
@@ -260,7 +296,7 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
     /*
      * Charge Card using OpenPay
      */
-    protected function _chargeCardInOpenpay($payment, $amount, $token, $device_session_id, $capture, $interest_free){
+    protected function _chargeCardInOpenpay($payment, $amount, $token, $device_session_id, $capture, $interest_free, $use_3d_secure){
 
         $order = $payment->getOrder();
         $orderFirstItem = $order->getItemById(0);
@@ -273,13 +309,19 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
             'device_session_id' => $device_session_id,
             'amount' => (float) $amount,
             'description' => $this->_getHelper()->__($orderFirstItem->getName()).(($numItems>1)?$this->_getHelper()->__('... and (%d) other items', $numItems-1): ''),            
-            'order_id' => $order->getIncrementId(),
+            //'order_id' => $order->getIncrementId(),
             'capture' => $capture
         );
         
         if($interest_free > 1){
             $chargeData['payment_plan'] = array('payments' => (int)$interest_free);
         }        
+        
+        if($use_3d_secure) {
+            $chargeData['use_3d_secure'] = true;
+            $chargeData['redirect_url'] = Mage::getBaseUrl().'charges/payments/confirm';
+        }
+        
 
         $billingAddress = $payment->getOrder()->getBillingAddress();
         //$shippingAddress = $payment->getOrder()->getShippingAddress();
@@ -311,7 +353,7 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
         return $charge;
     }
     
-    protected function _chargeOpenpayCustomer($payment, $amount, $token, $user_id, $device_session_id, $capture, $interest_free){
+    protected function _chargeOpenpayCustomer($payment, $amount, $token, $user_id, $device_session_id, $capture, $interest_free, $use_3d_secure){
 
         $order = $payment->getOrder();
         $orderFirstItem = $order->getItemById(0);
@@ -323,13 +365,18 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
             'method' => 'card',
             'amount' => $amount,
             'description' => $this->_getHelper()->__($orderFirstItem->getName()).(($numItems > 1) ? $this->_getHelper()->__('... and (%d) other items', $numItems - 1) : ''),            
-            'order_id' => $order->getIncrementId(),            
+            //'order_id' => $order->getIncrementId(),            
             'capture' => $capture
         );
         
         if($interest_free > 1){
             $chargeData['payment_plan'] = array('payments' => (int)$interest_free);
         }        
+        
+        if($use_3d_secure) {
+            $chargeData['use_3d_secure'] = true;
+            $chargeData['redirect_url'] = Mage::getBaseUrl().'charges/payments/confirm';
+        }
 
         $customer = $this->_openpay->customers->get($user_id);        
         $charge = $customer->charges->create($chargeData);
@@ -466,4 +513,16 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
         
     }
     
+    // Carnet CCV
+    public function getVerificationRegEx() {
+        return array_merge(parent::getVerificationRegEx(), array(
+            'CN' => '/^[0-9]{3}$/' // Carnet CCV
+       ));
+    }
+    
+    // Carnet CCV
+    public function OtherCcType($type) {
+        return in_array($type, array('DC'));
+    }
+     
 }

@@ -15,7 +15,7 @@ class Openpay_Charges_Model_Config
      */
     public function getSupportedCC()
     {
-        $model = Mage::getModel('payment/source_cctype')->setAllowedTypes(array('AE', 'VI', 'MC'));
+        $model = Mage::getModel('payment/source_cctype')->setAllowedTypes(array('AE', 'VI', 'MC', 'CN'));
         return $model->toOptionArray();
     }
     

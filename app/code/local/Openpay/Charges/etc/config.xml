@@ -1,5 +1,10 @@
 <?xml version="1.0"?>
 <config>
+    <modules>
+        <Openpay_Charges>
+            <version>1.9.0</version>
+        </Openpay_Charges>
+    </modules>
     <global>
         <resources>
             <charges_setup>
@@ -41,6 +46,15 @@
             <groups>
                 <charges>openpay</charges>
             </groups>
+            <cc>
+                <types>
+                    <CN>
+                        <code>CN</code>
+                        <name>Carnet</name>
+                        <order>60</order>
+                    </CN>
+                </types>
+            </cc>
         </payment>
         <fieldsets>
             <sales_convert_quote_payment>
@@ -58,6 +72,12 @@
                 <openpay_payment_id>
                     <to_order_payment>*</to_order_payment>
                 </openpay_payment_id>
+                <openpay_3d_secure>
+                    <to_order_payment>*</to_order_payment>
+                </openpay_3d_secure>
+                <openpay_3d_secure_url>
+                    <to_order_payment>*</to_order_payment>
+                </openpay_3d_secure_url>
             </sales_convert_order_payment>
             <customer_account>
                 <openpay_customer_id>
@@ -83,6 +103,14 @@
                     </charges>
                 </observers>
             </customer_save_after>
+            <checkout_onepage_controller_success_action>
+                <observers>
+                    <charges>
+                        <class>charges/observer</class>
+                        <method>checkoutOnepageControllerSuccessAction</method>
+                    </charges>
+                </observers>
+            </checkout_onepage_controller_success_action>
         </events>
     </global>
     <frontend>
@@ -98,9 +126,17 @@
                 <use>standard</use>
                 <args>
                     <module>Openpay_Charges</module>
-                    <frontName>charges</frontName>
+                    <frontName>charges</frontName>                    
                 </args>
             </charges>
+            <checkout>
+                <args>                                  
+                    <modules>
+                        <!-- Overwrite onepage checkout controller -->
+                        <Openpay_Charges before="Mage_Checkout">Openpay_Charges_Checkout</Openpay_Charges>
+                    </modules>
+                </args>
+            </checkout>
         </routers>
         <translate>
             <modules>
@@ -129,11 +165,13 @@
                 <model>charges/method_openpay</model>
                 <group>openpay</group>
                 <active>1</active>
-                <order_status>pending</order_status>
+                <order_status>pending</order_status>                         
                 <title>Openpay Tarjetas</title>
+                <cctypes>AE,VI,MC,CN</cctypes>
                 <allowspecific>0</allowspecific>
                 <group>offline</group>
                 <months_interest_free>1</months_interest_free>
+                <use_3d_secure>0</use_3d_secure>
             </charges>
         </payment>
     </default>

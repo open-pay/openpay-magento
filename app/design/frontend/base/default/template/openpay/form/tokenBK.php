@@ -10,46 +10,20 @@
         
     // create openpay device session id for fraud prevention        
     var deviceSessionId = OpenPay.deviceData.setup();
-    
+    console.log(deviceSessionId);
     
     var oneStepForm = document.getElementById("onestepcheckout-form");
     var oneStepFormTwo = document.getElementById("one-step-checkout-form");
     var oneStepFormThree = document.getElementById("co-form");    
-    var clarionOneStepForm = document.getElementById("onestepcheckout_orderform");        
-    
     
     jQuery(document).ready(function(){        
-        
-        if(clarionOneStepForm !== null) {
-                                                                      
-            var clarionSubmitBtn = jQuery('#onestepcheckout_orderform button[type="submit"]');
-            clarionSubmitBtn.attr('onclick', null);
-            
-            jQuery("#onestepcheckout_orderform").submit(function(e){                
-                e.preventDefault();  
-                var currentMethod = getPaymentMethod();
-                if (currentMethod === 'charges') {
-                                  
-                    var form = new VarienForm('onestepcheckout_orderform');
-                    if (form.validator.validate()) {
-                        processPayment();
-                    }
-                } else {
-                    checkout.save();
-                }                
-                
-            });
-        }
-        
-        if(oneStepFormThree !== null) {
-            jQuery("#review-btn").attr('onclick', null);
-            jQuery("#review-btn").click(function(){                    
-                var form = new VarienForm('co-form');
-                if (form.validator.validate()) {
-                    processPayment();
-                }
-            });
-        }
+        jQuery("#review-btn").attr('onclick', null);
+        jQuery("#review-btn").click(function(){
+           var form = new VarienForm('co-form');
+            if (form.validator.validate()) {
+                processPayment();
+            }
+        });
         
         var total = <?php echo Mage::helper('checkout/cart')->getQuote()->getGrandTotal() ?>;
         
@@ -71,10 +45,12 @@
         
     });
     
-    var processPayment = function () {  
-        var currentMethod = getPaymentMethod();     
+    var processPayment = function () {        
+        var currentMethod = getPaymentMethod();
+        console.log('processPayment');
         if (currentMethod === 'charges') {
-            if (isCardValid()) {                                
+            if (isCardValid()) {                
+                console.log('createOpenpayToken()');
                 createOpenpayToken();
             } else {                
                 openpayTempSave();
@@ -91,17 +67,15 @@
         document.getElementById('charges_device_session_id').value = deviceSessionId;
         
         // Se enmascara el valor de la tarjeta de crédito que se envía al servidor
-        //document.getElementById('charges_cc_number').value = '4111111111111111';
+        document.getElementById('charges_cc_number').value = e.data.card.card_number;
         console.log('Masked credit card!');
         
         if (window["IWD"] && IWD.OPC) {
             openpayTempSave();
-        } else if (oneStepForm !== null || oneStepFormTwo !== null) {
+        } else if (oneStepForm != null || oneStepFormTwo != null) {
             openpayTempSave();
-        } else if (oneStepFormThree !== null){    
+        } else if (oneStepFormThree != null){    
             review.save();
-        } else if (clarionOneStepForm !== null){        
-            checkout.save();
         } else {
             var request = new Ajax.Request(
                 payment.saveUrl, {
@@ -116,25 +90,25 @@
     }
 
     var error_callbak = function(e) {
-        // on payment error display error and reset loading button        
+        // on payment error display error and reset loading button
         alert(getErrorDescription(e.data));
         if (window["IWD"] && IWD.OPC) {
             IWD.OPC.Checkout.unlockPlaceOrder();
-        } else if (oneStepForm !== null) {
+        } else if (oneStepForm != null) {
             already_placing_order = false;
             var submitelement = $('onestepcheckout-place-order');
             submitelement.removeClassName('grey').addClassName('orange');
             submitelement.disabled = false;
             submitelement.parentNode.lastChild.remove();
             return false;
-        } else if (oneStepFormTwo !== null) {
+        } else if (oneStepFormTwo != null) {
             already_placing_order = false;
             var submitelement = $('onestepcheckout-button-place-order');
             submitelement.disabled = false;
             $('onestepcheckout-place-order-loading').hide();
             $('onestepcheckout-button-place-order').removeClassName('place-order-loader');
             $('onestepcheckout-button-place-order').addClassName('btn-checkout');
-        } else if (oneStepFormThree !== null || clarionOneStepForm !== null) {            
+        } else if (oneStepFormThree != null) {            
             already_placing_order = false;            
             return false;
         } else {
@@ -164,6 +138,8 @@
 
     function createOpenpayToken() {
         
+        console.log('createOpenpayToken');
+                        
         var expiration_year = document.getElementById('charges_expiration_yr').value.toString();
 
         var cardNumber = new String(document.getElementById('charges_cc_number').value);
@@ -206,8 +182,6 @@
                 
         if(oneStepFormThree !== null){
             validator = new Validation('co-form');            
-        } else if(clarionOneStepForm !== null) {
-            validator = new Validation('onestepcheckout_orderform');            
         }else{            
             validator = oneStepFormTwo === null ? new Validation(payment.form) : new Validation('one-step-checkout-form');
         }        
@@ -307,12 +281,14 @@
             }
         }
 
-    } else {                
+    } else {
+        console.log('openpayPaymentSave');
+        var openpayPaymentSave = payment.save;
         var openpayTempSave = function () {
-            var openpayPaymentSave = payment.save;
             openpayPaymentSave.apply(payment);
         }
-        payment.save = function () {                              
+        payment.save = function () {                  
+            console.log('payment_save');
             processPayment();
         }
     }

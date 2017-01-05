@@ -27,7 +27,7 @@ class Openpay_Charges_Model_Payment_Info extends Mage_Payment_Model_Info
      * Assign data to info model instance
      *
      * @param Varien_Object|Array $data
-     * @return TemplateTag_Stripe_Model_Payment
+     * @return TemplateTag_Openpay_Model_Payment
      */
     public function assignData($data)
     {
@@ -43,9 +43,6 @@ class Openpay_Charges_Model_Payment_Info extends Mage_Payment_Model_Info
                 'cc_owner' => $token->card->name,
             ));
         } catch (Exception $e) {}
-
-
-        $data->setData('stripe_test', $this->_getHelper()->getTest());
 
         return parent::assignData($data);
     }

@@ -12,6 +12,15 @@
                 <name>https://openpay.s3.amazonaws.com/openpay-data.v1.min.js</name>
                 <params/>
             </action>
+            <block type="core/text" name="openpay_charges.carnet.validation">
+                <action method="setText">
+                    <text>
+                        <![CDATA[<script type="text/javascript">
+                            Validation.creditCartTypes.set('CN', [new RegExp('^[0-9]{16}$'), new RegExp('^[0-9]{3}$'), true]);
+                        </script>]]>
+                    </text>
+                </action>
+            </block>
         </reference>
         <reference name="before_body_end">
             <block type="core/template" name="token" template="openpay/form/token.phtml" />
@@ -29,12 +38,21 @@
                 <name>https://openpay.s3.amazonaws.com/openpay-data.v1.min.js</name>
                 <params/>
             </action>
+            <block type="core/text" name="openpay_charges.carnet.validation">
+                <action method="setText">
+                    <text>
+                        <![CDATA[<script type="text/javascript">
+                            Validation.creditCartTypes.set('CN', [new RegExp('^[0-9]{16}$'), new RegExp('^[0-9]{3}$'), true]);
+                        </script>]]>
+                    </text>
+                </action>
+            </block>
         </reference>
         <reference name="before_body_end">
             <block type="core/template" name="token" template="openpay/form/token.phtml" />
         </reference>
-  </opc_index_index>
-  <onestepcheckout_index_index>
+    </opc_index_index>
+    <onestepcheckout_index_index>
         <reference name="head">
             <action method="addExternalItem">
                 <type>external_js</type>
@@ -46,9 +64,18 @@
                 <name>https://openpay.s3.amazonaws.com/openpay-data.v1.min.js</name>
                 <params/>
             </action>
+            <block type="core/text" name="openpay_charges.carnet.validation">
+                <action method="setText">
+                    <text>
+                        <![CDATA[<script type="text/javascript">
+                            Validation.creditCartTypes.set('CN', [new RegExp('^[0-9]{16}$'), new RegExp('^[0-9]{3}$'), true]);
+                        </script>]]>
+                    </text>
+                </action>
+            </block>
         </reference>
         <reference name="before_body_end">
             <block type="core/template" name="token" template="openpay/form/token.phtml" />
         </reference>
-  </onestepcheckout_index_index>
+    </onestepcheckout_index_index>
 </layout>
