@@ -10,18 +10,15 @@
         
     // create openpay device session id for fraud prevention        
     var deviceSessionId = OpenPay.deviceData.setup();
-    
-    
+        
     var oneStepForm = document.getElementById("onestepcheckout-form");
     var oneStepFormTwo = document.getElementById("one-step-checkout-form");
     var oneStepFormThree = document.getElementById("co-form");    
-    var clarionOneStepForm = document.getElementById("onestepcheckout_orderform");        
-    
+    var clarionOneStepForm = document.getElementById("onestepcheckout_orderform");                   
     
     jQuery(document).ready(function(){        
         
-        if(clarionOneStepForm !== null) {
-                                                                      
+        if(clarionOneStepForm !== null) {                                                                      
             var clarionSubmitBtn = jQuery('#onestepcheckout_orderform button[type="submit"]');
             clarionSubmitBtn.attr('onclick', null);
             
@@ -70,8 +67,8 @@
         });
         
     });
-    
-    var processPayment = function () {  
+        
+    var processPayment = function () {                
         var currentMethod = getPaymentMethod();     
         if (currentMethod === 'charges') {
             if (isCardValid()) {                                
@@ -79,10 +76,10 @@
             } else {                
                 openpayTempSave();
             }
-        } else {            
-            openpayTempSave();
+        } else {                                               
+            openpayTempSave();            
         }
-    }
+    };
 
     var success_callbak = function(e) {        
         
@@ -312,9 +309,20 @@
             var openpayPaymentSave = payment.save;
             openpayPaymentSave.apply(payment);
         }
-        payment.save = function () {                              
-            processPayment();
-        }
+//        payment.save = function () {                              
+//            processPayment();
+//        }                
+        Payment.prototype.save = Payment.prototype.save.wrap(function(save) {
+            var validator = new Validation(this.form);
+            if (this.validate() && validator.validate()) {
+                // DO WHAT YOU WANT TO DO BEFORE SAVE                                
+                if(getPaymentMethod() === "charges") {                                             
+                    createOpenpayToken();                    
+                }
+                save(); // THIS WILL CALL CORE SAVE THAT WAS WRAPPED
+            }
+        });
+        
     }
     
     function getPaymentMethod() {
