@@ -12,6 +12,16 @@
                 <name>https://openpay.s3.amazonaws.com/openpay-data.v1.min.js</name>
                 <params/>
             </action>
+            <action method="addExternalItem">
+                <type>external_css</type>
+                <name>https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css</name>
+                <params/>
+            </action>
+            <action method="addExternalItem">
+                <type>external_js</type>
+                <name>https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js</name>
+                <params/>
+            </action>
             <block type="core/text" name="openpay_charges.carnet.validation">
                 <action method="setText">
                     <text>
@@ -38,6 +48,16 @@
                 <name>https://openpay.s3.amazonaws.com/openpay-data.v1.min.js</name>
                 <params/>
             </action>
+            <action method="addExternalItem">
+                <type>external_css</type>
+                <name>https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css</name>
+                <params/>
+            </action>
+            <action method="addExternalItem">
+                <type>external_js</type>
+                <name>https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js</name>
+                <params/>
+            </action>
             <block type="core/text" name="openpay_charges.carnet.validation">
                 <action method="setText">
                     <text>
@@ -62,6 +82,16 @@
             <action method="addExternalItem">
                 <type>external_js</type>
                 <name>https://openpay.s3.amazonaws.com/openpay-data.v1.min.js</name>
+                <params/>
+            </action>
+            <action method="addExternalItem">
+                <type>external_css</type>
+                <name>https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css</name>
+                <params/>
+            </action>
+            <action method="addExternalItem">
+                <type>external_js</type>
+                <name>https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js</name>
                 <params/>
             </action>
             <block type="core/text" name="openpay_charges.carnet.validation">

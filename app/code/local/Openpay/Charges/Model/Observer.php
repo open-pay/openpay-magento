@@ -55,13 +55,10 @@ class Openpay_Charges_Model_Observer{
     }
 
     public function customerSaveAfter($event){
-
         $customer = $event->getCustomer();
         if($customer->getOpenpayUserId()){
             $this->_updateOpenpayCustomerBasicInfo($customer);
         }
-
-
     }
     protected function _updateOpenpayCustomerAddress($customer, $customerAddress){
         return $customer;
@@ -81,6 +78,7 @@ class Openpay_Charges_Model_Observer{
         return $openpay_customer->save();
     }
     protected function _updateOpenpayCustomerBasicInfo($customer){
+        return $customer;
         $openpay_customer = $this->_openpay->customers->get($customer->getOpenpayUserId());
 
         $openpay_customer->name = $customer->firstname;

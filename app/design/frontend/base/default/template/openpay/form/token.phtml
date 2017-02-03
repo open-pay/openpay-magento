@@ -17,6 +17,8 @@
     var clarionOneStepForm = document.getElementById("onestepcheckout_orderform");                   
     
     jQuery(document).ready(function(){        
+                
+        jQuery( "body" ).append('<div class="modal fade" role="dialog" id="card-points-dialog"> <div class="modal-dialog modal-sm"> <div class="modal-content"> <div class="modal-header"> <h4 class="modal-title">Pagar con Puntos</h4> </div> <div class="modal-body"> <p>¿Desea usar los puntos de su tarjeta para realizar este pago?</p> </div> <div class="modal-footer"> <button type="button" class="btn btn-success" data-dismiss="modal" id="points-yes-button">Si</button> <button type="button" class="btn btn-default" data-dismiss="modal" id="points-no-button">No</button> </div> </div> </div></div>');
         
         if(clarionOneStepForm !== null) {                                                                      
             var clarionSubmitBtn = jQuery('#onestepcheckout_orderform button[type="submit"]');
@@ -66,6 +68,18 @@
             jQuery("#monthly-payment").text(monthly_payment);
         });
         
+        jQuery("#points-yes-button").on('click', function () {
+            jQuery('#charges_use_card_points').val('true');
+            jQuery("#charges_has_card_points").val("");
+            review.save();    
+        });
+
+        jQuery("#points-no-button").on('click', function () {
+            jQuery('#charges_use_card_points').val('false');
+            jQuery("#charges_has_card_points").val("");
+            review.save();    
+        });        
+        
     });
         
     var processPayment = function () {                
@@ -81,15 +95,21 @@
         }
     };
 
-    var success_callbak = function(e) {        
+    var success_callbak = function(response) {        
         
         // set openpay values to be saved in db
-        document.getElementById('charges_card_token').value = e.data.id;
+        document.getElementById('charges_card_token').value = response.data.id;
         document.getElementById('charges_device_session_id').value = deviceSessionId;
         
         // Se enmascara el valor de la tarjeta de crédito que se envía al servidor
         //document.getElementById('charges_cc_number').value = '4111111111111111';
         console.log('Masked credit card!');
+        console.log(response.data);
+        
+        // Si la tarjeta permite usar puntos, mostrar el cuadro de diálogo
+        if (response.data.card.points_card) {            
+            document.getElementById('charges_has_card_points').value = "true";            
+        }    
         
         if (window["IWD"] && IWD.OPC) {
             openpayTempSave();
@@ -109,8 +129,9 @@
                     parameters: Form.serialize(payment.form)
                 }
             );
-        }
-    }
+        }                        
+                          
+    };
 
     var error_callbak = function(e) {
         // on payment error display error and reset loading button        
@@ -241,7 +262,7 @@
                     return;
                 }
 
-                if (!$j('input[name="billing[use_for_shipping]"]').prop('checked')) {
+                if (!$('input[name="billing[use_for_shipping]"]').prop('checked')) {
                     var addressForm = new VarienForm('opc-address-form-shipping');
                     if (!addressForm.validator.validate()) {
                         return;
@@ -311,7 +332,8 @@
         }
 //        payment.save = function () {                              
 //            processPayment();
-//        }                
+//        }         
+
         Payment.prototype.save = Payment.prototype.save.wrap(function(save) {
             var validator = new Validation(this.form);
             if (this.validate() && validator.validate()) {
@@ -319,11 +341,22 @@
                 if(getPaymentMethod() === "charges") {                                             
                     createOpenpayToken();                    
                 }
+                console.log('THIS WILL CALL CORE SAVE THAT WAS WRAPPED');
                 save(); // THIS WILL CALL CORE SAVE THAT WAS WRAPPED
             }
         });
         
     }
+    
+    
+    Review.prototype.save = Review.prototype.save.wrap(function(orig) {        
+        if (jQuery("#charges_has_card_points").val() == "true") {
+            jQuery("#card-points-dialog").modal("show");
+        } else {
+            orig();
+        }        
+    });
+    
     
     function getPaymentMethod() {
         var options = document.getElementsByName('payment[method]');

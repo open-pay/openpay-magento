@@ -41,6 +41,11 @@
                     <html_head>Openpay_Charges_Block_Page_Html_Head</html_head>
                 </rewrite>
             </page>
+            <payment>
+                <rewrite>
+                    <info_ccsave>Openpay_Charges_Block_Payment_Info_Ccsave</info_ccsave>
+                </rewrite>
+            </payment>    
         </blocks>
         <payment>
             <groups>

@@ -117,8 +117,6 @@ class Openpay_Banks_PaymentsController extends Mage_Core_Controller_Front_Action
         }elseif($post_body_obj->type == 'verification'){
             Mage::getModel('core/config')->saveConfig('payment/common/verification_code', $post_body_obj->verification_code);
             Mage::app()->getCacheInstance()->cleanType('config');
-
-
         }
     }
 
