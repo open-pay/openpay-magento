@@ -1,74 +1,21 @@
 <!doctype html>
 <html>
-<head>
-    <meta charset="UTF-8">
-    <title>Pago en Banco</title>
+    <head>
+        <meta charset="UTF-8">
+        <title>Pago en Banco</title>
 
-    <link href="<?php echo $this->getSkinUrl('css/stores/pago_banco.css');?>" rel="stylesheet" type="text/css">
+        <link href="<?php echo $this->getSkinUrl('css/stores/pago_banco.css');?>" rel="stylesheet" type="text/css">
 
-</head>
+    </head>
 
-<body>
-<div class="margen">
-    <div class="header">
-        <div class="Yellow1"></div>
-        <div class="Logo-Top"><img src="<?php echo $this->getSkinUrl('images/logo.gif');?>" alt="Logo" /></div>
-        <div class="Yellow2"><span>Esperamos tu pago</span></div>
-    </div>
-    <div class="Data-container">
-        <div class="Data1">
-                   
-        
-            <h1><strong>Cantidad a pagar</strong></h1>
-            <?php
-            $mountToProcess = $this->getAmount();
-            if (strpos($mountToProcess,'.') === false) {
-            	$mountToProcess = $mountToProcess . ".00";
-            }
-            
-            list($pesos, $cents) = explode('.', $mountToProcess); $cents *= 1;?>
-            <h2>$<?php echo number_format($pesos,0) ?><span>.<?php echo (($cents%10 == 0)? $cents . '0': ($cents < 0)? '0' . $cents: $cents);?></span><small> MXN</small></h2>
-            <h1><strong>Fecha límite de pago:</strong></h1>
-            <h1><?php if($this->getDueDate()):?>
-                    <?php echo $this->getDueDate() ?>
-                <?php else:?>
-                    <?php echo $this->__('No aplica');?>
-                <?php endif;?>
-            </h1>
+    <body>
+        <div class="margen">
+            <iframe id="pdf" src="<?php echo $this->getPdfUrl() ?>" style="width:100%; height:850px; visibility: visible !important; opacity: 1 !important;" frameborder="0"></iframe>    
+
+            <div class="buttons">        
+                <a href="<?php echo $this->getBaseUrl();?>">Sigue comprando</a>
+            </div>
         </div>
-        <div class="Spei-stuff">
-            <a href="#"><img src="<?php echo $this->getSkinUrl('images/banks/spei.gif');?>" alt="SPEI"></a>
-        </div>
-        <div class="Data_bank">
-            <h1 style="padding-bottom:20px;"><strong>Datos para transferencia electrónica</strong></h1>
-            <div class="div1"><h3>Nombre del banco: <?php echo $this->getBank();?></h3></div>
-            <div class="div2"><h3>CLABE: <?php echo $this->getClabe();?></h3></div>
-            <div class="div1"><h3>Referencia numérica: <?php echo $this->getReferenceNumber();?></h3></div>
-            <div class="div2"><h3>Concepto de pago: <?php echo $this->getConcept();?></h3></div>
-        </div>
-    </div>
-    <div class="cont-text">
-            ¿Tienes alguna dudas o problema? Llámanos al teléfono<br>
-            <span><?php echo $this->getStorePhone();?></span><br><br>
-            O escríbenos a<br>
-            <a href="mailto:<?php echo $this->getStoreGeneralEmail();?>"><span><?php echo $this->getStoreGeneralEmail();?></span></a></p>
-    </div>
-    <div class="buttons">
-        <a id="print-button">Imprimir</a>
-        <a href="<?php echo $this->getBaseUrl();?>">Sigue comprando</a>
-    </div>
-    <div class="Yellow3">
-    </div>
-</div>
-<div class="powered">
-    <img src="<?php echo $this->getSkinUrl('images/banks/powered_openpay.png');?>" alt="Powered by Openpay">
-</div>
 
-<script>
-    window.print();
-    document.getElementById('print-button').onclick = function(){
-        window.print();
-    }
-</script>
-</body>
+    </body>
 </html>

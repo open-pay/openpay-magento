@@ -55,21 +55,8 @@ class Openpay_Stores_PaymentsController extends Mage_Core_Controller_Front_Actio
         }
         $this->loadLayout();
 
-        $block = $this->getLayout()->getBlock('root');
-        $email = isset($customer) && ($customer === true) ? $customer->email : $order->getPayment()->getOrder()->getBillingAddress()->getEmail();
-
-        $block->setTranId($charge->id);
-        $block->setTranDate($this->getLongGlobalDateFormat($charge->creation_date));
-        $block->setDueDate($this->getLongGlobalDateFormat($charge->due_date));
-        $block->setBarCode($charge->payment_method->reference);
-        $block->setBarCodeUrl($charge->payment_method->barcode_url);
-        $block->setAmount($charge->amount);
-        $block->setConcept($charge->description);
-        $block->setEmail($email );
-        $block->setStoreName(Mage::getStoreConfig('trans_email/ident_general/name'));
-        $block->setStorePhone(Mage::getStoreConfig('general/store_information/phone'));
-        $block->setStoreGeneralEmail(Mage::getStoreConfig('trans_email/ident_general/email'));
-
+        $block = $this->getLayout()->getBlock('root');        
+        $block->setPdfUrl($this->getStoresPdfUrl().'/'.Mage::getStoreConfig('payment/common/merchantid').'/'.$charge->payment_method->reference);
         $block->setTemplate('openpay/stores_print.phtml');
 
         $this->renderLayout();
@@ -189,4 +176,9 @@ class Openpay_Stores_PaymentsController extends Mage_Core_Controller_Front_Actio
         );
         return date('j', $time).' de '.$months_array[$month_number].' de '.date('Y', $time).', a las '.date('g:i A', $time);
     }
+    
+    private function getStoresPdfUrl() {        
+        return Mage::getStoreConfig('payment/common/sandbox') ? 'https://sandbox-dashboard.openpay.mx/paynet-pdf' : 'https://dashboard.openpay.mx/paynet-pdf';
+    }
+    
 }

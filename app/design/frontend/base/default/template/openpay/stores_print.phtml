@@ -1,135 +1,23 @@
 <!doctype html>
 <html>
-<head>
-    <title>Pago en tienda de conveniencia</title>
-    <link href="/favicon.ico?v=5" rel="icon" type="image/x-icon" />
-    <link href="/favicon.ico?v=5" rel="shortcut icon" type="image/x-icon" />
+    <head>
+        <title>Pago en tienda de conveniencia</title>
+        <link href="/favicon.ico?v=5" rel="icon" type="image/x-icon" />
+        <link href="/favicon.ico?v=5" rel="shortcut icon" type="image/x-icon" />
 
 
-    <link href="<?php echo $this->getSkinUrl('css/stores/pago.css');?>" rel="stylesheet" type="text/css">
-    <meta charset="UTF-8">
-</head>
+        <link href="<?php echo $this->getSkinUrl('css/stores/pago.css');?>" rel="stylesheet" type="text/css">
+        <meta charset="UTF-8">
+    </head>
 
-<body>
+    <body>
+        <div class="margen">
+            <iframe id="pdf" src="<?php echo $this->getPdfUrl() ?>" style="width:100%; height:850px; visibility: visible !important; opacity: 1 !important;" frameborder="0"></iframe>    
 
-<div class="whitepaper">
-    <div class="Header">
-        <div class="Logo_empresa">
-            <img src="<?php echo $this->getSkinUrl('images/logo.gif');?>" alt="Logo">
+            <div class="buttons">        
+                <a href="<?php echo $this->getBaseUrl();?>">Sigue comprando</a>
+            </div>
         </div>
-        <div class="Logo_paynet">
-            <div>Servicio a pagar</div>
-            <img src="<?php echo $this->getSkinUrl('images/stores/paynet_logo.png');?>" alt="Logo Paynet">
-        </div>
-    </div>
-    <div class="Data">
-        <div class="Big_Bullet">
-            <span></span>
-        </div>
-        <div class="col1">
-            <h3>Fecha límite de pago</h3>
-            <h4>
-                <?php if($this->getDueDate()):?>
-                    <?php echo $this->getDueDate() ?>
-                <?php else:?>
-                    <?php echo $this->__('No aplica');?>
-                <?php endif;?>
-            </h4>
-            <img width="300" src="<?php echo $this->getBarCodeUrl();?>" alt="Código de Barras">
-            <span><?php echo $this->getBarCode();?></span>
-            <small>En caso de que el escáner no sea capaz de leer el código de barras, escribir la referencia tal como se muestra.</small>
 
-        </div>
-        <div class="col2">
-            <h2>Total a pagar</h2>
-            <?php 
-            $mountToProcess = $this->getAmount();
-            if (strpos($mountToProcess,'.') === false) {
-            	$mountToProcess = $mountToProcess . ".00";
-            }
-            list($pesos, $cents) = explode('.', $mountToProcess, 2); $cents *= 1;?>
-            <h1>$ <?php echo number_format($pesos,0) ?><span>.<?php echo (($cents%10 == 0)? $cents . '0': ($cents < 0)? '0' . $cents: $cents);?></span><small> MXN</small></h1>
-            <h2 class="S-margin">+8 pesos por comisión</h2>
-        </div>
-    </div>
-    <div class="DT-margin"></div>
-    <div class="Data">
-        <div class="Big_Bullet">
-            <span></span>
-        </div>
-        <div class="col1">
-            <h3>Detalles de la compra</h3>
-        </div>
-    </div>
-    <div class="Table-Data">
-        <div class="table-row color1">
-            <div>Descripción</div>
-            <span><?php echo $this->getConcept();?></span>
-        </div>
-        <div class="table-row color2">
-            <div>Fecha y hora</div>            
-            <span><?php echo$this->getTranDate() ?></span>
-        </div>
-        <div class="table-row color1">
-            <div>Correo electrónico:</div>
-            <span><?php echo $this->getEmail();?></span>
-        </div>
-        <div class="table-row color2"  style="display:none">
-            <div>&nbsp;</div>
-            <span>&nbsp;</span>
-        </div>
-        <div class="table-row color1" style="display:none">
-            <div>&nbsp;</div>
-            <span>&nbsp;</span>
-        </div>
-    </div>
-    <div class="DT-margin"></div>
-    <div>
-        <div class="Big_Bullet">
-            <span></span>
-        </div>
-        <div class="col1">
-            <h3>Como realizar el pago</h3>
-            <ol>
-                <li>Acude a cualquier tienda afiliada</li>
-                <li>Entrega al cajero el código de barras y menciona que realizarás un pago de servicio Paynet</li>
-                <li>Realizar el pago en efectivo por $ <?php echo $pesos;?>.<?php echo (($cents%10 == 0)? $cents . '0': ($cents < 0)? '0' . $cents: $cents);?> MXN (más $8 pesos por comisión)</li>
-                <li>Conserva el ticket para cualquier aclaración</li>
-            </ol>
-            <small>Si tienes dudas comunicate a <?php echo $this->getStoreName();?> al teléfono <?php echo $this->getStorePhone();?> o al correo <?php echo $this->getStoreGeneralEmail();?></small>
-        </div>
-        <div class="col1">
-            <h3>Instrucciones para el cajero</h3>
-            <ol>
-                <li>Ingresar al menú de Pago de Servicios</li>
-                <li>Seleccionar Paynet</li>
-                <li>Escanear el código de barras o ingresar el núm. de referencia</li>
-                <li>Ingresa la cantidad total a pagar</li>
-                <li>Cobrar al cliente el monto total más la comisión de $8 pesos</li>
-                <li>Confirmar la transacción y entregar el ticket al cliente</li>
-            </ol>
-            <small>Para cualquier duda sobre como cobrar, por favor llamar al teléfono 01 800 300 08 08 en un horario de 8am a 9pm de lunes a domingo</small>
-        </div>
-    </div>
-
-    <div class="logos-tiendas">
-        <div><img width="50" src="<?php echo $this->getSkinUrl('images/stores/7eleven.png');?>" alt="7elven"></div>
-        <div class="margen2"><img width="90" src="<?php echo $this->getSkinUrl('images/stores/extra.png');?>" alt="extra"></div>
-        <div class="margen2"><img width="90" src="<?php echo $this->getSkinUrl('images/stores/farmacia_ahorro.png');?>" alt="farmacias del ahorro"></div>
-        <div class="mg3"><img width="150" src="<?php echo $this->getSkinUrl('images/stores/benavides.png');?>" alt="benavides"></div>
-        <div class="mg3"><small>¿Quieres pagar en otras tiendas? <br> visita: www.openpay.mx/tiendas</small></div>
-    </div>
-    <div class="Powered">
-        <img src="<?php echo $this->getSkinUrl('images/stores/powered_openpay.png');?>" alt="Powered by Openpay" width="150"> <a id="print-button">Imprimir</a> <a href="<?php echo $this->getBaseUrl();?>">Seguir comprando</a>
-    </div>
-</div>
-
-<script>
-    window.print();
-    document.getElementById('print-button').onclick = function(){
-        window.print();
-    }
-</script>
-
-</body>
+    </body>
 </html>

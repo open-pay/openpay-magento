@@ -54,20 +54,7 @@ class Openpay_Banks_PaymentsController extends Mage_Core_Controller_Front_Action
         $this->loadLayout();
 
         $block = $this->getLayout()->getBlock('root');
-
-        $block->setTranId($charge->id);
-        $block->setTranDate($this->getLongGlobalDateFormat($charge->creation_date));
-        $block->setDueDate($this->getLongGlobalDateFormat($charge->due_date));
-        $block->setAmount($charge->amount);
-        $block->setConcept($charge->description);
-        $block->setClabe($charge->payment_method->clabe);
-        $block->setReferenceNumber($charge->payment_method->name);
-        $block->setStorePhone(Mage::getStoreConfig('general/store_information/phone'));
-        $block->setStoreGeneralEmail(Mage::getStoreConfig('trans_email/ident_general/email'));
-
-        $bank_name = array('STP' => 'SIST TRANSF Y PAGOS');
-        $block->setBank($bank_name[$charge->payment_method->bank]);
-
+        $block->setPdfUrl($this->getSpeiPdfUrl().'/'.Mage::getStoreConfig('payment/common/merchantid').'/'.$charge->id);
         $block->setTemplate('openpay/banks_print.phtml');
 
         $this->renderLayout();
@@ -181,6 +168,10 @@ class Openpay_Banks_PaymentsController extends Mage_Core_Controller_Front_Action
             12 => 'Diciembre'
         );
         return date('j', $time).' de '.$months_array[$month_number].' de '.date('Y', $time).', a las '.date('g:i A', $time);
+    }
+    
+    private function getSpeiPdfUrl() {
+        return Mage::getStoreConfig('payment/common/sandbox') ? 'https://sandbox-dashboard.openpay.mx/spei-pdf' : 'https://dashboard.openpay.mx/spei-pdf';        
     }
     
 }
