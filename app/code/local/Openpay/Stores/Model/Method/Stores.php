@@ -146,7 +146,7 @@ class Openpay_Stores_Model_Method_Stores extends Mage_Payment_Model_Method_Abstr
             'method' => 'store',
             'amount' => (float) $amount,
             'description' => $this->_getHelper()->__($orderFirstItem->getName()).(($numItems>1)?$this->_getHelper()->__('... and (%d) other items', $numItems-1): ''),
-            //'order_id' => $order->getIncrementId(),
+            'order_id' => $order->getIncrementId(),
         );
 
         $billingAddress = $payment->getOrder()->getBillingAddress();
@@ -239,7 +239,7 @@ class Openpay_Stores_Model_Method_Stores extends Mage_Payment_Model_Method_Abstr
             'method' => 'store',
             'amount' => $amount,
             'description' => $this->_getHelper()->__($orderFirstItem->getName()).(($numItems>1)?$this->_getHelper()->__('... and (%d) other items', $numItems-1): ''),
-            //'order_id' => $order->getIncrementId(),
+            'order_id' => $order->getIncrementId(),
         );
 
         if($hoursBeforeCancel){            
