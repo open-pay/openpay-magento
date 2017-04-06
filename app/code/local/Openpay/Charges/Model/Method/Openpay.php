@@ -227,8 +227,7 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
                 } catch (Exception $e) {                    
                     $openpay_user = $this->_createOpenpayCustomer($customer, $shippingAddress); 
                     $customer->setOpenpayUserId($openpay_user->id);
-                    $customer->save();
-                    //Mage::throwException($e->getCode().': '.$e->getMessage());
+                    $customer->save();                    
                 }
             } else {
                 $openpay_user = $this->_createOpenpayCustomer($customer, $shippingAddress); 
@@ -284,8 +283,7 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
             }       
 
             return $this;                        
-        } catch (Exception $e) {
-            
+        } catch (Exception $e) {            
             $use_3d_secure = Mage::getStoreConfig('payment/charges/use_3d_secure') == '1' ? true : false;            
             if($e->getErrorCode() == '3005' && $use_3d_secure) {                      
                 $this->_doOpenpayTransaction($payment, $amount, $capture, $use_3d_secure);                
