@@ -70,36 +70,22 @@ class Openpay_Banks_PaymentsController extends Mage_Core_Controller_Front_Action
         if($this->_shouldCaptureStorePayment($post_body_obj)){
 
             $order = Mage::getModel('sales/order')->loadByIncrementId($post_body_obj->transaction->order_id);
-
-            if(!$order->canInvoice()){
-                Mage::throwException(Mage::helper('core')->__('Cannot create an invoice.'));
+            $payment = $order->getPayment();
+            
+            if ($payment->openpay_payment_id != $post_body_obj->transaction->id) {
+                return false;
             }
 
-            // Double check payment in OpenPay
-            $charge = $this->_getOpenpayCharge($order);
-
-            if($charge->status == 'completed' && $order->getTotalDue() == $charge->serializableData['amount']){
-
-                /**
-                 * Create invoice
-                 * The invoice will be in 'Pending' state
-                 */
-                $invoiceId = Mage::getModel('sales/order_invoice_api')->create($order->getIncrementId(), array());
-
-                /**
-                 * Pay invoice
-                 * i.e. the invoice state is now changed to 'Paid'
-                 */
-                $invoice = Mage::getModel('sales/order_invoice')->loadByIncrementId($invoiceId);
-                $invoice->capture()->save();
-
-                $order->getPayment()->capture($invoice);
-                $order->getPayment()->setOpenpayAuthorization($charge->authorization);
-                $order->save();
-
-                Mage::getModel('core/config')->deleteConfig('payment/banks/verification_code');
-            }
-
+            $order->setState(Mage_Sales_Model_Order::STATE_PROCESSING);
+            $order->setStatus(Mage_Sales_Model_Order::STATE_PROCESSING);
+            $order->setTotalPaid($post_body_obj->transaction->amount);              
+            $order->save();
+            
+            // Save Openpay Authorization Code on Order Payment            
+            $payment->setOpenpayAuthorization($post_body_obj->transaction->authorization);
+            $payment->save();
+            
+            Mage::getModel('core/config')->deleteConfig('payment/stores/verification_code');
 
         }elseif($post_body_obj->type == 'verification'){
             Mage::getModel('core/config')->saveConfig('payment/common/verification_code', $post_body_obj->verification_code);
