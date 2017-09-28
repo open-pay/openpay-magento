@@ -2,7 +2,7 @@
 
 Requirements
 --------------
-PHP 5.0.3 or greater
+PHP 5.4 or greater
 
 Supported Versions
 -------------------
@@ -13,7 +13,7 @@ Installation
 
 - Option A (Recommended)
 
-1. Download latest [.tar.gz file](https://github.com/open-pay/openpay-magento/raw/master/Openpay_Charges-1.0.0.tgz)
+1. Download latest [.tar.gz file](https://github.com/open-pay/openpay-magento/raw/master/Openpay_Charges-2.0.0.tgz)
 2. In your admin go to **System > Magento Connect > Magento Connect Manager** 
 3. Update the .tar.gz file using **Direct package file upload**
 
@@ -48,23 +48,3 @@ Configuration
 Configure state as required
 --------------------
 Go to **System > General > States Options** and select all allowed countries
-
-Payment Notifications (Stores and Banks)
---------------------
-For receive payment notifications at the moment the pay was done, you need to configure a webhook notification in the Openpay Dashboard.
-
-**Note:** Configure one webhook for store and other for bank.
-
-1.- Go to "Configuraciones" -> "Agregar Webhook" and configure the URL and the events
-
-    For Store
-    http://mymagento-store.com/stores/payments/confirm
-    For Bank
-    http://mymagento-store.com/banks/payments/confirm
-    
-    Select "Personalizar Eventos" and check all the options in "Cargos" section.
-![webhook configuration](https://s3.amazonaws.com/images.openpay/webhook_configuration.png)
-
-2.- You will receive a verification code in your magento store, to see your code go to "Openpay Common Resources" and copy it. Use this code to verify your webhook in the Openpay Dashboard.
-
-
