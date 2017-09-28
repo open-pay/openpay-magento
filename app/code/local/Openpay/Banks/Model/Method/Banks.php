@@ -116,7 +116,7 @@ class Openpay_Banks_Model_Method_Banks extends Mage_Payment_Model_Method_Abstrac
         $payment->setOpenpayCreationDate($charge->creation_date);
         $payment->setOpenpayPaymentId($charge->id);
         $payment->setTransactionId($charge->id);
-        $payment->setOpenpayBarcode($charge->payment_method->reference);
+        $payment->setOpenpayBarcode($charge->payment_method->clabe);
 
         return $this;
     }

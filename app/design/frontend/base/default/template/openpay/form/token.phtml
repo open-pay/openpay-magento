@@ -348,14 +348,14 @@
         
     }
     
-    
-    Review.prototype.save = Review.prototype.save.wrap(function(orig) {        
-        if (jQuery("#charges_has_card_points").val() == "true") {
-            jQuery("#card-points-dialog").modal("show");
-        } else {
-            orig();
-        }        
-    });
+    // Pago con puntos
+//    Review.prototype.save = Review.prototype.save.wrap(function(orig) {        
+//        if (jQuery("#charges_has_card_points").val() == "true") {
+//            jQuery("#card-points-dialog").modal("show");
+//        } else {
+//            orig();
+//        }        
+//    });
     
     
     function getPaymentMethod() {

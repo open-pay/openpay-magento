@@ -217,20 +217,20 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
             $interest_free = $paymentRequest['interest_free'];
         }
         
-        if(Mage_Sales_Model_Quote::CHECKOUT_METHOD_LOGIN_IN) {
+        if($checkout_method == Mage_Sales_Model_Quote::CHECKOUT_METHOD_LOGIN_IN) {
             $customer = $payment->getOrder()->getCustomer();            
-            $shippingAddress = $payment->getOrder()->getShippingAddress();
+            $billingAddress = $payment->getOrder()->getBillingAddress();
             
             if ($customer->openpay_user_id) {
                 try {
                     $this->_getOpenpayCustomer($customer->openpay_user_id);    
                 } catch (Exception $e) {                    
-                    $openpay_user = $this->_createOpenpayCustomer($customer, $shippingAddress); 
+                    $openpay_user = $this->_createOpenpayCustomer($customer, $billingAddress); 
                     $customer->setOpenpayUserId($openpay_user->id);
                     $customer->save();                    
                 }
             } else {
-                $openpay_user = $this->_createOpenpayCustomer($customer, $shippingAddress); 
+                $openpay_user = $this->_createOpenpayCustomer($customer, $billingAddress); 
                 $customer->setOpenpayUserId($openpay_user->id);
                 $customer->save();
             }            
@@ -408,23 +408,23 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
     /*
      * Create user in OpenPay
      */
-    protected function _createOpenpayCustomer($customer, $shippingAddress){
+    protected function _createOpenpayCustomer($customer, $billingAddress){
 
         $customerData = array(
             'name' => $customer->firstname,
             'last_name' => $customer->lastname,
             'email' => $customer->email,
-            'phone_number' => $shippingAddress->telephone,
+            'phone_number' => $billingAddress->telephone,
             'requires_account' => false
         );
         
-        if($shippingAddress->street && $shippingAddress->postcode && $shippingAddress->region && $shippingAddress->city && $shippingAddress->country_id) {
+        if($billingAddress->getStreet() && $billingAddress->getRegion() && $billingAddress->getCity() && $billingAddress->getPostcode()) {
             $customerData['address'] = array(
-                'line1' => $shippingAddress->street,
-                'postal_code' => $shippingAddress->postcode,
-                'state' => $shippingAddress->region,
-                'city' => $shippingAddress->city,
-                'country_code' => $shippingAddress->country_id
+                'line1' => $billingAddress->getStreet(),
+                'postal_code' => $billingAddress->getPostcode(),
+                'state' => $billingAddress->getRegion(),
+                'city' => $billingAddress->getCity(),
+                'country_code' => $billingAddress->country_id
             );
         }        
 
