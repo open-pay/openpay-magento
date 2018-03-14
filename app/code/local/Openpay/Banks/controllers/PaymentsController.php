@@ -95,7 +95,7 @@ class Openpay_Banks_PaymentsController extends Mage_Core_Controller_Front_Action
 
     protected function _shouldCaptureStorePayment($post_body_obj){
         if($post_body_obj->type <> 'charge.succeeded') return false;
-        if($post_body_obj->transaction->method <> '') return false;
+        if($post_body_obj->transaction->method <> 'bank_account') return false;
         if($post_body_obj->transaction->status <> 'completed') return false;
         return true;
     }
