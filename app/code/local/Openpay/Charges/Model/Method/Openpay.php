@@ -328,7 +328,7 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
             'device_session_id' => $device_session_id,
             'amount' => (float) $amount,
             'description' => $this->_getHelper()->__($orderFirstItem->getName()).(($numItems>1)?$this->_getHelper()->__('... and (%d) other items', $numItems-1): ''),            
-            'order_id' => $order->getIncrementId(),
+            'order_id' => $order->getIncrementId().'_'.date('His'),   
             'use_card_points' => $use_card_points,
             'capture' => $capture
         );
@@ -356,8 +356,9 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
                 
         // Validate all required data for Customer's Address object
         if($billingAddress->getStreet() && $billingAddress->getRegion() && $billingAddress->getCity() && $billingAddress->getCountry_id() && $billingAddress->getPostcode()){
+            $street = is_array($billingAddress->getStreet()) ? implode(',', $billingAddress->getStreet()) : $billingAddress->getStreet();            
             $chargeCustomer['address'] =  array(
-                'line1' => implode(' ', $billingAddress->getStreet()),
+                'line1' => $street,
                 'state' => $billingAddress->getRegion(),
                 'city' => $billingAddress->getCity(),
                 'postal_code' => $billingAddress->getPostcode(),
@@ -385,7 +386,7 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
             'method' => 'card',
             'amount' => $amount,
             'description' => $this->_getHelper()->__($orderFirstItem->getName()).(($numItems > 1) ? $this->_getHelper()->__('... and (%d) other items', $numItems - 1) : ''),            
-            'order_id' => $order->getIncrementId(),   
+            'order_id' => $order->getIncrementId().'_'.date('His'),   
             'use_card_points' => $use_card_points,
             'capture' => $capture
         );
@@ -419,8 +420,9 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc
         );
         
         if($billingAddress->getStreet() && $billingAddress->getRegion() && $billingAddress->getCity() && $billingAddress->getPostcode()) {
+            $street = is_array($billingAddress->getStreet()) ? implode(',', $billingAddress->getStreet()) : $billingAddress->getStreet();            
             $customerData['address'] = array(
-                'line1' => $billingAddress->getStreet(),
+                'line1' => $street,
                 'postal_code' => $billingAddress->getPostcode(),
                 'state' => $billingAddress->getRegion(),
                 'city' => $billingAddress->getCity(),
