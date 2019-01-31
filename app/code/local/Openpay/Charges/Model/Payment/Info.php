@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Payment information model
  *
@@ -6,8 +7,8 @@
  * @package    Mage_Payment
  * @author      Magento Core Team <core@magentocommerce.com>
  */
-class Openpay_Charges_Model_Payment_Info extends Mage_Payment_Model_Info
-{
+class Openpay_Charges_Model_Payment_Info extends Mage_Payment_Model_Info {
+
     /**
      * Retrieve data
      *
@@ -15,9 +16,8 @@ class Openpay_Charges_Model_Payment_Info extends Mage_Payment_Model_Info
      * @param   mixed $index
      * @return unknown
      */
-    public function getData($key='', $index=null)
-    {
-        if('openpay_token'===$key){
+    public function getData($key = '', $index = null) {
+        if ('openpay_token' === $key) {
             $this->_data['openpay_token'] = $this->getCcToken();
         }
         return parent::getData($key, $index);
@@ -29,8 +29,7 @@ class Openpay_Charges_Model_Payment_Info extends Mage_Payment_Model_Info
      * @param Varien_Object|Array $data
      * @return TemplateTag_Openpay_Model_Payment
      */
-    public function assignData($data)
-    {
+    public function assignData($data) {
         if (is_array($data)) {
             $data = new Varien_Object($data);
         }
@@ -42,7 +41,9 @@ class Openpay_Charges_Model_Payment_Info extends Mage_Payment_Model_Info
                 'cc_type' => $token->card->type,
                 'cc_owner' => $token->card->name,
             ));
-        } catch (Exception $e) {}
+        } catch (Exception $e) {
+            Mage::log('assignData: ' . $e->getMessage());
+        }
 
         return parent::assignData($data);
     }

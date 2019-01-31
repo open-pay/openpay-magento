@@ -30,6 +30,8 @@ class Openpay_Stores_PaymentsController extends Mage_Core_Controller_Front_Actio
         $request = Mage::app()->getRequest();
 
         $order = Mage::getModel('sales/order')->loadByIncrementId($request->order);
+        
+        $show_map = Mage::getStoreConfig('payment/stores/show_map');
 
         $customer = null;
 
@@ -54,9 +56,14 @@ class Openpay_Stores_PaymentsController extends Mage_Core_Controller_Front_Actio
             throw new Exception('This payment sheet has expired, please place a new order');
         }
         $this->loadLayout();
+        
+        $billing = $order->getBillingAddress();
+        $post_code = $billing ? $billing->getPostcode() : '';
 
         $block = $this->getLayout()->getBlock('root');        
         $block->setPdfUrl($this->getStoresPdfUrl().'/'.Mage::getStoreConfig('payment/common/merchantid').'/'.$charge->payment_method->reference);
+        $block->setShowMap($show_map);
+        $block->setPostCode($post_code);
         $block->setTemplate('openpay/stores_print.phtml');
 
         $this->renderLayout();

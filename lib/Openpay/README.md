@@ -1,18 +1,16 @@
-openpay-php
-===========
+![Openpay PHP](http://www.openpay.mx/img/github/php.jpg)
 
-PHP client for Openpay API services (version 1.0.0)
+PHP client for Openpay API services (version 1.2.0)
 
 This is a client implementing the payment services for Openpay at openpay.mx
 
 What's new?
 -----------
 
+02/06/2014 - Fixed: tried to add an optional derived resource when the object was null 
 04/02/2014 - Added: support for Captures on charges
-
 31/01/2014 - Fixed: Added classes and configs to avoid errors on PHP class autoload feature. Now 
 the autoload is turned off by default
-
 23/01/2014 - Added: the Sandbox Mode is the default now. Added a method to activate the Production
 Mode explicitly.
 
@@ -31,6 +29,23 @@ Multibyte String extension for PHP
 
 Installation
 ------------
+### Composer
+The preferred method is via [composer](https://getcomposer.org). Follow the
+[installation instructions](https://getcomposer.org/doc/00-intro.md) if you do not already have
+composer installed.
+
+Once composer is installed, execute the following command in your project root to install this library:
+
+```sh
+composer require openpay/sdk dev-master
+```
+Finally, be sure to include the autoloader:
+
+```php
+require_once '/path/to/your-project/vendor/autoload.php';
+```
+
+### Manual installation
 
 To install, just:
 
@@ -92,6 +107,10 @@ will allow you to active/inactivate the sandbox mode.
 
 ````php
 Openpay::setProductionMode(true);
+````
+Also you can use environment variables for this purpose:
+````
+SetEnv OPENPAY_PRODUCTION_MODE true
 ````
 
 If its necessary, you can use the method **Openpay::getProductionMode()** to 
@@ -225,26 +244,26 @@ try {
  	$customer->save();
 
 } catch (OpenpayApiTransactionError $e) {
-	error('ERROR on the transaction: ' . $e->getMessage() . 
+	error_log('ERROR on the transaction: ' . $e->getMessage() . 
 	      ' [error code: ' . $e->getErrorCode() . 
 	      ', error category: ' . $e->getCategory() . 
 	      ', HTTP code: '. $e->getHttpCode() . 
-	      ', request ID: ' . $e->getRequestId() . ']');
+	      ', request ID: ' . $e->getRequestId() . ']', 0);
 
 } catch (OpenpayApiRequestError $e) {
-	error('ERROR on the request: ' . $e->getMessage());
+	error_log('ERROR on the request: ' . $e->getMessage(), 0);
 
 } catch (OpenpayApiConnectionError $e) {
-	error('ERROR while connecting to the API: ' . $e->getMessage());
+	error_log('ERROR while connecting to the API: ' . $e->getMessage(), 0);
 
 } catch (OpenpayApiAuthError $e) {
-	error('ERROR on the authentication: ' . $e->getMessage());
+	error_log('ERROR on the authentication: ' . $e->getMessage(), 0);
 	
 } catch (OpenpayApiError $e) {
-	error('ERROR on the API: ' . $e->getMessage());
+	error_log('ERROR on the API: ' . $e->getMessage(), 0);
 	
 } catch (Exception $e) {
-	error('Error on the script: ' . $e->getMessage());
+	error_log('Error on the script: ' . $e->getMessage(), 0);
 }
 ````
 
@@ -865,4 +884,3 @@ $customer = $openpay->customers->get('a9ualumwnrcxkl42l6mh');
 $subscription = $customer->subscriptions->get('s7ri24srbldoqqlfo4vp');
 $subscription->delete();
 ````
-	

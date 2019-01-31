@@ -5,6 +5,24 @@
             <version>1.9.0</version>
         </Openpay_Charges>
     </modules>
+    <default>
+        <payment>
+            <charges>
+                <model>charges/method_openpay</model>
+                <group>openpay</group>
+                <active>1</active>
+                <order_status>pending</order_status>                         
+                <title>Openpay Tarjetas</title>
+                <cctypes>AE,VI,MC,CN</cctypes>
+                <allowspecific>0</allowspecific>
+                <group>offline</group>
+                <use_card_points>0</use_card_points>
+                <months_interest_free>1</months_interest_free>
+                <charge_type>direct</charge_type>
+                <save_cc>0</save_cc>
+            </charges>
+        </payment>
+    </default>
     <global>
         <resources>
             <charges_setup>
@@ -163,21 +181,5 @@
                 </Openpay_Charges>
             </modules>
         </translate>
-    </adminhtml>
-    <default>
-        <payment>
-            <charges>
-                <model>charges/method_openpay</model>
-                <group>openpay</group>
-                <active>1</active>
-                <order_status>pending</order_status>                         
-                <title>Openpay Tarjetas</title>
-                <cctypes>AE,VI,MC,CN</cctypes>
-                <allowspecific>0</allowspecific>
-                <group>offline</group>
-                <months_interest_free>1</months_interest_free>
-                <use_3d_secure>0</use_3d_secure>
-            </charges>
-        </payment>
-    </default>
+    </adminhtml>    
 </config>

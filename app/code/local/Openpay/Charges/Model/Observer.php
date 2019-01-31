@@ -14,18 +14,30 @@ class Openpay_Charges_Model_Observer{
         return Mage::getSingleton('sales/order_config');
     }
     
-    public function checkoutOnepageControllerSuccessAction($order_ids){
-        
+    public function checkoutOnepageControllerSuccessAction($order_ids){        
         $response = Mage::app()->getResponse();        
 
         if(Mage::getConfig()->getModuleConfig('Openpay_Charges')->is('active', 'true')){
             $order_ids_list = $order_ids->getOrderIds();
             $order_id  = $order_ids_list[0];
             $order = Mage::getModel('sales/order')->load($order_id);
+                        
+            Mage::log('Order getStatus (BEFORE): ' . $order->getStatus());
+            Mage::log('Checkout Success status (BEFORE): '.$order->getStatusLabel());    
             
-            Mage::log('Checkout Success status: '.$order->getStatusLabel());    
+            $charge = $this->getOpenpayCharge($order);            
+            Mage::log('Openpay Charge Status: ' . $charge->status);
             
-            //$configured_order_status = $this->getConfig()->getStatusLabel(Mage::getStoreConfig('payment/charges/order_status'));
+            if ($charge->status == 'completed') {                
+                $order->setState(Mage_Sales_Model_Order::STATE_PROCESSING);
+                $order->setStatus(Mage_Sales_Model_Order::STATE_PROCESSING);
+                $order->setTotalPaid($charge->amount);              
+                $order->save();                                                
+            }
+                                    
+            Mage::log('Order getStatus (AFTER): ' . $order->getStatus());
+            Mage::log('Checkout Success status (AFTER): '.$order->getStatusLabel());    
+                        
             $configured_order_status = Mage::getStoreConfig('payment/charges/order_status');
             Mage::log('Configured Order status: '.$configured_order_status);
             Mage::log('openpay_3d_secure: '.$order->getPayment()->getData('openpay_3d_secure'));
@@ -39,6 +51,18 @@ class Openpay_Charges_Model_Observer{
         }
 
         return $this;
+    }
+    
+    private function getOpenpayCharge ($order) {
+        $payment = $order->getPayment();        
+        
+        if (!$order->getCustomerIsGuest()) {                    
+            $customer = Mage::getModel('customer/customer')->load($order->getCustomerId());
+            $op_customer = $this->_openpay->customers->get($customer->getOpenpayUserId());
+            return $op_customer->charges->get($payment->getOpenpayPaymentId());
+        }
+        
+         return $this->_openpay->charges->get($payment->getLastTransId());
     }
 
     public function customerAddressSaveAfter($event){
@@ -60,6 +84,7 @@ class Openpay_Charges_Model_Observer{
             $this->_updateOpenpayCustomerBasicInfo($customer);
         }
     }
+    
     protected function _updateOpenpayCustomerAddress($customer, $customerAddress){
         return $customer;
         $openpay_customer = $this->_openpay->customers->get($customer->getOpenpayUserId());
@@ -77,6 +102,7 @@ class Openpay_Charges_Model_Observer{
 
         return $openpay_customer->save();
     }
+    
     protected function _updateOpenpayCustomerBasicInfo($customer){
         return $customer;
         $openpay_customer = $this->_openpay->customers->get($customer->getOpenpayUserId());

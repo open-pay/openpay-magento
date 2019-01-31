@@ -10,15 +10,18 @@
         
     // create openpay device session id for fraud prevention        
     var deviceSessionId = OpenPay.deviceData.setup();
-        
+    
     var oneStepForm = document.getElementById("onestepcheckout-form");
     var oneStepFormTwo = document.getElementById("one-step-checkout-form");
     var oneStepFormThree = document.getElementById("co-form");    
     var clarionOneStepForm = document.getElementById("onestepcheckout_orderform");                   
     
+    var useCardPoints = "<?php echo Mage::getStoreConfig('payment/charges/use_card_points') ?>";    
+    
     jQuery(document).ready(function(){        
                 
-        jQuery( "body" ).append('<div class="modal fade" role="dialog" id="card-points-dialog"> <div class="modal-dialog modal-sm"> <div class="modal-content"> <div class="modal-header"> <h4 class="modal-title">Pagar con Puntos</h4> </div> <div class="modal-body"> <p>¿Desea usar los puntos de su tarjeta para realizar este pago?</p> </div> <div class="modal-footer"> <button type="button" class="btn btn-success" data-dismiss="modal" id="points-yes-button">Si</button> <button type="button" class="btn btn-default" data-dismiss="modal" id="points-no-button">No</button> </div> </div> </div></div>');
+        //jQuery( "body" ).append('<div class="modal fade" role="dialog" id="card-points-dialog"> <div class="modal-dialog modal-sm"> <div class="modal-content"> <div class="modal-header"> <h4 class="modal-title">Pagar con Puntos</h4> </div> <div class="modal-body"> <p>¿Desea usar los puntos de su tarjeta para realizar este pago?</p> </div> <div class="modal-footer"> <button type="button" class="btn btn-success" data-dismiss="modal" id="points-yes-button">Si</button> <button type="button" class="btn btn-default" data-dismiss="modal" id="points-no-button">No</button> </div> </div> </div></div>');
+        jQuery("body").append('<div class="modal fade" role="dialog" id="card-points-dialog"> <div class="modal-dialog modal-sm"> <div class="modal-content"> <div class="modal-header"> <h4 class="modal-title">Pagar con Puntos</h4> </div> <div class="modal-body"> <p>¿Desea usar los puntos de su tarjeta para realizar este pago?</p> </div> <div class="modal-footer"> <button type="button" class="btn btn-success" data-dismiss="modal" id="points-yes-button">Si</button> <button type="button" class="btn btn-default" data-dismiss="modal" id="points-no-button">No</button> </div> </div> </div></div>');
         
         if(clarionOneStepForm !== null) {                                                                      
             var clarionSubmitBtn = jQuery('#onestepcheckout_orderform button[type="submit"]');
@@ -52,6 +55,25 @@
         
         var total = <?php echo Mage::helper('checkout/cart')->getQuote()->getGrandTotal() ?>;
         
+        jQuery(document).on("change", "#charges_openpay_cc", function() {                                    
+            if (jQuery(this).val() !== "new") {                                 
+                jQuery('#charges_save_cc').prop('checked', false);                
+                jQuery('#charges_save_cc').prop('disabled', true);                 
+
+                jQuery('#charges_cc_owner').val("");         
+                jQuery('#charges_cc_number').val("");                         
+                jQuery("#charges_cc_type").val("").change();
+                jQuery("#charges_expiration").val("").change();
+                jQuery("#charges_expiration_yr").val("").change();
+                jQuery('#charges_cc_cid').val("");                                                         
+                
+                jQuery('.openpay_fieldset').hide();
+            } else {                    
+                jQuery('.openpay_fieldset').show();                
+                jQuery('#charges_save_cc').prop('disabled', false);
+            }
+        });
+        
         jQuery(document).on("change", "#charges_interest_free", function() {        
             var monthly_payment = 0;
             var months = parseInt(jQuery(this).val());     
@@ -69,22 +91,49 @@
         });
         
         jQuery("#points-yes-button").on('click', function () {
-            jQuery('#charges_use_card_points').val('true');
-            jQuery("#charges_has_card_points").val("");
-            review.save();    
+            jQuery('#charges_use_card_points').val('true');                        
         });
 
         jQuery("#points-no-button").on('click', function () {
-            jQuery('#charges_use_card_points').val('false');
-            jQuery("#charges_has_card_points").val("");
-            review.save();    
+            jQuery('#charges_use_card_points').val('false');            
         });        
         
     });
+    
+    var doPayemntWithToken = function() {
+        console.log('charges_device_session_id', deviceSessionId);
+        document.getElementById('charges_device_session_id').value = deviceSessionId;
+        
+        if (window["IWD"] && IWD.OPC) {
+            openpayTempSave();
+        } else if (oneStepForm !== null || oneStepFormTwo !== null) {
+            openpayTempSave();
+        } else if (oneStepFormThree !== null){    
+            review.save();
+        } else if (clarionOneStepForm !== null){        
+            checkout.save();
+        } else {
+            new Ajax.Request(
+                payment.saveUrl, {
+                    method: 'post',
+                    onComplete: payment.onComplete,
+                    onSuccess: payment.onSave,
+                    onFailure: checkout.ajaxFailure.bind(checkout),
+                    parameters: Form.serialize(payment.form)
+                }
+            );
+        }     
+    }
         
     var processPayment = function () {                
         var currentMethod = getPaymentMethod();     
         if (currentMethod === 'charges') {
+            
+            if (jQuery('#charges_openpay_cc').val() !== 'new') {
+                doPayemntWithToken();
+                return;
+            }            
+            
             if (isCardValid()) {                                
                 createOpenpayToken();
             } else {                
@@ -95,22 +144,24 @@
         }
     };
 
-    var success_callbak = function(response) {        
-        
+    var success_callbak = function(response) {                
         // set openpay values to be saved in db
         document.getElementById('charges_card_token').value = response.data.id;
         document.getElementById('charges_device_session_id').value = deviceSessionId;
-        
-        // Se enmascara el valor de la tarjeta de crédito que se envía al servidor
-        //document.getElementById('charges_cc_number').value = '4111111111111111';
-        console.log('Masked credit card!');
+                                
         console.log(response.data);
         
         // Si la tarjeta permite usar puntos, mostrar el cuadro de diálogo
-        if (response.data.card.points_card) {            
-            document.getElementById('charges_has_card_points').value = "true";            
+        if (response.data.card.points_card && useCardPoints === '1') {                        
+//            var r = confirm("¿Desea usar los puntos de su tarjeta para realizar este pago?");
+//            if (r === true) {
+//                jQuery('#charges_use_card_points').val('true');                                                        
+//            } else {
+//                jQuery('#charges_use_card_points').val('false');                        
+//            } 
+            jQuery("#card-points-dialog").modal("show");
         }    
-        
+                        
         if (window["IWD"] && IWD.OPC) {
             openpayTempSave();
         } else if (oneStepForm !== null || oneStepFormTwo !== null) {
@@ -162,19 +213,19 @@
 
     function getErrorDescription(data) {
         console.log("Openpay response: " + JSON.stringify(data));
-        if (data.error_code == 1001 || data.error_code == 1003) {
+        if (data.error_code === 1001 || data.error_code === 1003) {
             return "La dirección esta incompleta o es incorrecta, favor de verificarla.";
         }
-        if (data.error_code == 2005) {
+        if (data.error_code === 2005) {
             return "Fecha de expiración inválida.";
         }
-        if (data.error_code == 2006) {
+        if (data.error_code === 2006) {
             return "El código cvv es requerido.";
         }
-        if (data.error_code == 2004) {
+        if (data.error_code ===2004) {
             return "Número de tarjeta inválido.";
         }
-        if (data.error_code == 1004) {
+        if (data.error_code === 1004) {
             return "Servicio no disponible";
         }
         return "Ocurrió un error interno que no permitio que la operación se completara.";
@@ -248,6 +299,7 @@
                 IWD.OPC.validatePayment();
             }
         }
+        
         var openpayTempSave = function () {
             initSaveOrder();
         }
@@ -325,16 +377,22 @@
             }
         }
 
-    } else {                
+    } else {                      
         var openpayTempSave = function () {
             var openpayPaymentSave = payment.save;
             openpayPaymentSave.apply(payment);
-        }
+        };
 //        payment.save = function () {                              
 //            processPayment();
 //        }         
 
-        Payment.prototype.save = Payment.prototype.save.wrap(function(save) {
+        Payment.prototype.save = Payment.prototype.save.wrap(function(save) {            
+            console.log('Payment.prototype.save.wrap!!!', jQuery('#charges_openpay_cc').val());            
+            if (jQuery('#charges_openpay_cc').val() !== 'new') {
+                doPayemntWithToken();            
+                return;
+            } 
+            
             var validator = new Validation(this.form);
             if (this.validate() && validator.validate()) {
                 // DO WHAT YOU WANT TO DO BEFORE SAVE                                

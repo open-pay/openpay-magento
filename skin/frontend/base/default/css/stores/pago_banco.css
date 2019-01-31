@@ -32,9 +32,8 @@ p {
     line-height: 28px;
 }
 .margen {
-    margin: 20px auto 15px auto;
-    border:1px solid #EDEDED;
-    width: 650px;
+    margin: 20px auto 15px auto;    
+    width: 750px;
 }
 .Yellow1 {
     float: left;

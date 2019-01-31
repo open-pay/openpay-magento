@@ -12,10 +12,18 @@
 
     <body>
         <div class="margen">
+            <h2>Recibo de pago</h2>
             <iframe id="pdf" src="<?php echo $this->getPdfUrl() ?>" style="width:100%; height:850px; visibility: visible !important; opacity: 1 !important;" frameborder="0"></iframe>    
-
+            
+            <?php if($this->getShowMap()): ?>      
+                <div style="margin: 40px 0px; width: 100%">
+                    <h2>Mapa de tiendas</h2>
+                    <iframe src="https://www.paynet.com.mx/mapa-tiendas/index.html?locationNotAllowed=true&postalCode=<?php echo $this->getPostCode() ?>" style="border: 1px solid #000; width:100%; height:300px;" frameborder="0"></iframe>                
+                </div>    
+            <?php endif; ?>   
+            
             <div class="buttons">        
-                <a href="<?php echo $this->getBaseUrl();?>">Sigue comprando</a>
+                <a href="<?php echo $this->getBaseUrl();?>">Seguir comprando</a>
             </div>
         </div>
 

@@ -11,12 +11,7 @@ class OpenpayApiDerivedResource extends OpenpayApiResourceBase {
 	private $cacheList = array();
 
 	protected static function getInstance($resourceName, $p = null) {
-        try{
-            $classDoesExist = class_exists($resourceName.'List', false);
-        }catch (Exception $e){
-            $classDoesExist = false;
-        }
-		if ($classDoesExist) {
+		if (class_exists($resourceName.'List', false)) {
 			$resource = $resourceName.'List';
 			return new $resource($resourceName);
 		}

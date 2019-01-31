@@ -43,7 +43,13 @@ class Openpay_Charges_PaymentsController extends Mage_Core_Controller_Front_Acti
             $payment = $order->getPayment();
             $payment->setOpenpayAuthorization($charge->authorization);
             $payment->setData('openpay_3d_secure', 0);            
-            $payment->save();            
+            $payment->save();        
+            
+            // Se actualiza el estatu de la Orden
+//            $order->setState(Mage_Sales_Model_Order::STATE_PROCESSING);
+//            $order->setStatus(Mage_Sales_Model_Order::STATE_PROCESSING);
+//            $order->setTotalPaid($charge->amount);              
+//            $order->save();
                                     
             Mage::getSingleton('checkout/session')->getQuote()->setIsActive(false)->save();
             $this->_redirect('checkout/onepage/success');

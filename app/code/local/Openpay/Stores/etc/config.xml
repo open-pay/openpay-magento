@@ -16,6 +16,9 @@
 
                 <!-- default title for payment checkout page and order view page -->
                 <title>Pago en efectivo en tiendas</title>
+                
+                <show_map>0</show_map>
+                
                 <payment_action>pending_payment</payment_action>
                 <allowspecific>0</allowspecific>
             </stores>
