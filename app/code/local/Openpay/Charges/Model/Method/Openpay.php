@@ -14,7 +14,7 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc 
     protected $_canCapture = true;
     protected $_canCapturePartial = true;
     protected $_canVoid = true;
-    protected $_canRefundInvoicePartial = false;
+    protected $_canRefundInvoicePartial = true;
     protected $_formBlockType = 'charges/form_openpay';
     protected $_infoBlockType = 'payment/info_ccsave';
 
@@ -160,9 +160,9 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc 
         $order = $payment->getOrder();
         $is_guest = $order->getCustomerIsGuest();
 
-        if ($payment->getAmountPaid() <> $amount) {
-            throw new Exception($this->_getHelper()->__('OpenPay currently does not allow refunding partial or higher amounts.'));
-        }
+//        if ($payment->getAmountPaid() <> $amount) {
+//            throw new Exception($this->_getHelper()->__('OpenPay currently does not allow refunding partial or higher amounts.'));
+//        }
         
         if ($is_guest) {
             $this->_refundOrder($payment, $amount);
