@@ -37,13 +37,13 @@ You will see the result at the end of the page
 1. Go to **System > Configuration > Sales > Payment Methods**. Select Openpay.
 
 2. Set your PUBLIC_KEY, MERCHANT_ID, PRIVATE_KEY (Get this values from the dashboard) on "Openpay Common Resources" section.
-![](https://drive.google.com/uc?export=view&id=1KYbjtyEe51pf4Mte1ZAFDFlpLEKJlMqa)
+![](https://s3.amazonaws.com/openpay-plugins-screenshots/magento/magento_conf_gral.png)
 
 3. Enable the payments methods that you want to have
 
-![](https://drive.google.com/uc?export=view&id=1OJ-L_d4fPHrbsXeVU--OuF49pu7W7L2e)
+![](https://s3.amazonaws.com/openpay-plugins-screenshots/magento/magento_conf_cards.png)
 
-![](https://drive.google.com/uc?export=view&id=1c9sVXolhevZ14ovHPPq-Kthb8HjjnaAL)
+![](https://s3.amazonaws.com/openpay-plugins-screenshots/magento/magento_conf_offline.png)
 
 
 4. Save your configuration
