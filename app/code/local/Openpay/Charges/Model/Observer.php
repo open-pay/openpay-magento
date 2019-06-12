@@ -28,7 +28,7 @@ class Openpay_Charges_Model_Observer{
             $charge = $this->getOpenpayCharge($order);            
             Mage::log('Openpay Charge Status: ' . $charge->status);
             
-            if ($charge->status == 'completed') {                
+            if ($charge->status == 'completed' && $charge->method == 'card') {                
                 $order->setState(Mage_Sales_Model_Order::STATE_PROCESSING);
                 $order->setStatus(Mage_Sales_Model_Order::STATE_PROCESSING);
                 $order->setTotalPaid($charge->amount);              
@@ -55,18 +55,17 @@ class Openpay_Charges_Model_Observer{
     
     private function getOpenpayCharge ($order) {
         $payment = $order->getPayment();        
-        
+                
         if (!$order->getCustomerIsGuest()) {                    
             $customer = Mage::getModel('customer/customer')->load($order->getCustomerId());
             $op_customer = $this->_openpay->customers->get($customer->getOpenpayUserId());
             return $op_customer->charges->get($payment->getOpenpayPaymentId());
         }
         
-         return $this->_openpay->charges->get($payment->getLastTransId());
+         return $this->_openpay->charges->get($payment->getOpenpayPaymentId());
     }
 
     public function customerAddressSaveAfter($event){
-
         $customerAddress = $event->getCustomerAddress();
         $customer = $customerAddress->getCustomer();
         $totalCustomerAddresses = count($customer->getAddressesCollection()->getItems());
