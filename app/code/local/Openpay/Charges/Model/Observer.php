@@ -16,11 +16,13 @@ class Openpay_Charges_Model_Observer{
     
     public function checkoutOnepageControllerSuccessAction($order_ids){        
         $response = Mage::app()->getResponse();        
+        $order_ids_list = $order_ids->getOrderIds();
+        $order_id  = $order_ids_list[0];
+        $order = Mage::getModel('sales/order')->load($order_id);
+        
+        $code = Mage::getModel('Openpay_Charges_Model_Method_Openpay')->getCode();
 
-        if(Mage::getConfig()->getModuleConfig('Openpay_Charges')->is('active', 'true')){
-            $order_ids_list = $order_ids->getOrderIds();
-            $order_id  = $order_ids_list[0];
-            $order = Mage::getModel('sales/order')->load($order_id);
+        if(Mage::getConfig()->getModuleConfig('Openpay_Charges')->is('active', 'true') && $order->getPayment()->getMethod() == $code){            
                         
             Mage::log('Order getStatus (BEFORE): ' . $order->getStatus());
             Mage::log('Checkout Success status (BEFORE): '.$order->getStatusLabel());    
@@ -41,10 +43,8 @@ class Openpay_Charges_Model_Observer{
             $configured_order_status = Mage::getStoreConfig('payment/charges/order_status');
             Mage::log('Configured Order status: '.$configured_order_status);
             Mage::log('openpay_3d_secure: '.$order->getPayment()->getData('openpay_3d_secure'));
-
-            $code = Mage::getModel('Openpay_Charges_Model_Method_Openpay')->getCode();
-
-            if($order->getPayment()->getMethod() == $code && $order->getPayment()->getData('openpay_3d_secure_url') !== null && $order->getPayment()->getData('openpay_3d_secure') == 1){                
+           
+            if($order->getPayment()->getData('openpay_3d_secure_url') !== null && $order->getPayment()->getData('openpay_3d_secure') == 1){                
                 Mage::log('Observer Redirect URL: '.$order->getPayment()->getData('openpay_3d_secure_url'));                    
                 $response->setRedirect($order->getPayment()->getData('openpay_3d_secure_url'));                
             } 

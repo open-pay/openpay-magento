@@ -386,9 +386,8 @@
 //            processPayment();
 //        }         
 
-        Payment.prototype.save = Payment.prototype.save.wrap(function(save) {            
-            console.log('Payment.prototype.save.wrap!!!', jQuery('#charges_openpay_cc').val());            
-            if (jQuery('#charges_openpay_cc').val() !== 'new') {
+        Payment.prototype.save = Payment.prototype.save.wrap(function(save) {                        
+            if (jQuery('#charges_openpay_cc').val() !== 'new' && getPaymentMethod() === "charges") {
                 doPayemntWithToken();            
                 return;
             } 
@@ -404,17 +403,7 @@
             }
         });
         
-    }
-    
-    // Pago con puntos
-//    Review.prototype.save = Review.prototype.save.wrap(function(orig) {        
-//        if (jQuery("#charges_has_card_points").val() == "true") {
-//            jQuery("#card-points-dialog").modal("show");
-//        } else {
-//            orig();
-//        }        
-//    });
-    
+    }        
     
     function getPaymentMethod() {
         var options = document.getElementsByName('payment[method]');
