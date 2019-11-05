@@ -118,8 +118,8 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc 
         }
         // now we retrieve our CCV regex pattern and validate against it
         $verificationRegex = $this->getVerificationRegEx();
-        if (!preg_match($verificationRegex[$info->getCcType()], $info->getCcCid())) {
-            $errorMsg = Mage::getHelper()->__('Please enter a valid credit card verification number.');
+        if (!preg_match($verificationRegex[$info->getCcType()], $info->getCcCid())) {            
+            $errorMsg = Mage::helper('payment')->__('Please enter a valid credit card verification number.');
         }
 
         if ($errorMsg) {

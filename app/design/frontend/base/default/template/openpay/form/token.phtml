@@ -18,9 +18,7 @@
     
     var useCardPoints = "<?php echo Mage::getStoreConfig('payment/charges/use_card_points') ?>";    
     
-    jQuery(document).ready(function(){        
-                
-        //jQuery( "body" ).append('<div class="modal fade" role="dialog" id="card-points-dialog"> <div class="modal-dialog modal-sm"> <div class="modal-content"> <div class="modal-header"> <h4 class="modal-title">Pagar con Puntos</h4> </div> <div class="modal-body"> <p>¿Desea usar los puntos de su tarjeta para realizar este pago?</p> </div> <div class="modal-footer"> <button type="button" class="btn btn-success" data-dismiss="modal" id="points-yes-button">Si</button> <button type="button" class="btn btn-default" data-dismiss="modal" id="points-no-button">No</button> </div> </div> </div></div>');
+    jQuery(document).ready(function(){         
         jQuery("body").append('<div class="modal fade" role="dialog" id="card-points-dialog"> <div class="modal-dialog modal-sm"> <div class="modal-content"> <div class="modal-header"> <h4 class="modal-title">Pagar con Puntos</h4> </div> <div class="modal-body"> <p>¿Desea usar los puntos de su tarjeta para realizar este pago?</p> </div> <div class="modal-footer"> <button type="button" class="btn btn-success" data-dismiss="modal" id="points-yes-button">Si</button> <button type="button" class="btn btn-default" data-dismiss="modal" id="points-no-button">No</button> </div> </div> </div></div>');
         
         if(clarionOneStepForm !== null) {                                                                      
@@ -29,7 +27,7 @@
             
             jQuery("#onestepcheckout_orderform").submit(function(e){                
                 e.preventDefault();  
-                var currentMethod = getPaymentMethod();
+                var currentMethod = payment.currentMethod;
                 if (currentMethod === 'charges') {
                                   
                     var form = new VarienForm('onestepcheckout_orderform');
@@ -51,7 +49,7 @@
                     processPayment();
                 }
             });
-        }
+        }   
         
         var total = <?php echo Mage::helper('checkout/cart')->getQuote()->getGrandTotal() ?>;
         
@@ -100,13 +98,23 @@
         
     });
     
-    var doPayemntWithToken = function() {
-        console.log('charges_device_session_id', deviceSessionId);
+    var doPayemntWithToken = function() {        
         document.getElementById('charges_device_session_id').value = deviceSessionId;
         
         if (window["IWD"] && IWD.OPC) {
             openpayTempSave();
-        } else if (oneStepForm !== null || oneStepFormTwo !== null) {
+        } else if (oneStepForm !== null) {
+            var form = new VarienForm('onestepcheckout-form');
+            if (form.validator.validate()) {
+                $('onestepcheckout-form').submit();
+            } else {
+                already_placing_order = false;
+                var submitelement = $('onestepcheckout-place-order');
+                submitelement.removeClassName('grey').addClassName('orange');
+                submitelement.disabled = false;
+                submitelement.parentNode.lastChild.remove();
+            }
+        } else if (oneStepFormTwo !== null) {
             openpayTempSave();
         } else if (oneStepFormThree !== null){    
             review.save();
@@ -126,18 +134,18 @@
     }
         
     var processPayment = function () {                
-        var currentMethod = getPaymentMethod();     
-        if (currentMethod === 'charges') {
-            
+        var currentMethod = payment.currentMethod;                              
+        
+        if (currentMethod === 'charges') {            
             if (jQuery('#charges_openpay_cc').val() !== 'new') {
                 doPayemntWithToken();
                 return;
             }            
             
-            if (isCardValid()) {                                
+            if (isCardValid()) {                                                
                 createOpenpayToken();
-            } else {                
-                openpayTempSave();
+            } else {                                
+                alert('Los datos de la tarjeta no son válidos.');
             }
         } else {                                               
             openpayTempSave();            
@@ -164,7 +172,9 @@
                         
         if (window["IWD"] && IWD.OPC) {
             openpayTempSave();
-        } else if (oneStepForm !== null || oneStepFormTwo !== null) {
+        } else if (oneStepForm !== null) {
+            openpayTempSave();
+        } else if (oneStepFormTwo !== null) {
             openpayTempSave();
         } else if (oneStepFormThree !== null){    
             review.save();
@@ -231,8 +241,7 @@
         return "Ocurrió un error interno que no permitio que la operación se completara.";
     }
 
-    function createOpenpayToken() {
-        
+    function createOpenpayToken() {        
         var expiration_year = document.getElementById('charges_expiration_yr').value.toString();
 
         var cardNumber = new String(document.getElementById('charges_cc_number').value);
@@ -245,6 +254,8 @@
             "expiration_month": document.getElementById('charges_expiration').value,
             "cvv2": document.getElementById('charges_cc_cid').value
         };
+        
+        console.log('tokenData', tokenData);
 
         var select = document.getElementById('billing:region_id');
         var state = document.getElementById('billing:region') ? document.getElementById('billing:region').value.substring(0, 45) : "";
@@ -252,7 +263,7 @@
         if (state === "" && select) {
             state = select.options[select.selectedIndex].text;
         }
-         
+                 
         if(validateElement('billing:city') && validateElement('billing:street1') && validateElement('billing:postcode') && validateElement('billing:country_id') && state !== "") {
             //Obtenerlos desde el formulario
             var addressData = {
@@ -265,7 +276,7 @@
             }            
             tokenData['address'] = addressData;
         }
-
+        
         OpenPay.token.create(tokenData, success_callbak, error_callbak);
         
     }
@@ -276,16 +287,25 @@
         if(oneStepFormThree !== null){
             validator = new Validation('co-form');            
         } else if(clarionOneStepForm !== null) {
-            validator = new Validation('onestepcheckout_orderform');            
-        }else{            
+            validator = new Validation('onestepcheckout_orderform');     
+        } else if (oneStepForm !== null) {
+            var form = new VarienForm('onestepcheckout-form');
+            if (!form.validator.validate()) {            
+                already_placing_order = false;
+                var submitelement = $('onestepcheckout-place-order');
+                /* Disable button to avoid multiple clicks */
+                submitelement.removeClassName('grey').addClassName('orange');
+                submitelement.disabled = false;
+                submitelement.parentNode.lastChild.remove();
+                return false;
+            }
+            
+            return true;
+        } else {            
             validator = oneStepFormTwo === null ? new Validation(payment.form) : new Validation('one-step-checkout-form');
         }        
         
-        if (validator.validate()) {              
-            return true;
-        } else {
-            return false;
-        }
+        return validator.validate();
     }
 
     if (window["IWD"] && IWD.OPC) {
@@ -302,7 +322,8 @@
         
         var openpayTempSave = function () {
             initSaveOrder();
-        }
+        };
+        
         IWD.OPC.initSaveOrder = function () {
             $(document).on('click', '.opc-btn-checkout', function () {
 
@@ -324,31 +345,36 @@
             });
         }
     } else if (oneStepForm != null) {
-        var openpayTempSave = function () {
+        console.log('OneStepCheckout', oneStepForm);               
+        
+        var openpayTempSave = function() {
             var form = new VarienForm('onestepcheckout-form');
-            if (form.validator.validate()) {
+            if(form.validator.validate())  {
+                /* Submit the form */
                 $('onestepcheckout-form').submit();
             } else {
                 already_placing_order = false;
                 var submitelement = $('onestepcheckout-place-order');
+                /* Disable button to avoid multiple clicks */
                 submitelement.removeClassName('grey').addClassName('orange');
                 submitelement.disabled = false;
                 submitelement.parentNode.lastChild.remove();
             }
-        }
-        $('.onestepcheckout-place-order').each(function (elem) {
+        };
+
+        $$('.onestepcheckout-place-order').each(function (elem) {
             elem.observe('click', function (e) {
                 already_placing_order = true;
                 var submitelement = $('onestepcheckout-place-order');
+                /* Disable button to avoid multiple clicks */
                 submitelement.removeClassName('orange').addClassName('grey');
                 submitelement.disabled = true;
-                var loaderelement = new Element('span').
-                        addClassName('onestepcheckout-place-order-loading').
-                        update('Por favor espere, estamos procesando su orden...');
+                var loaderelement = new Element('span').addClassName('onestepcheckout-place-order-loading').update('Please wait, processing your order...');
                 submitelement.parentNode.appendChild(loaderelement);
                 processPayment();
             });
         });
+        
     } else if (oneStepFormTwo != null) {
         var openpayTempSave = function () {
             var form = new VarienForm('one-step-checkout-form');
@@ -382,12 +408,9 @@
             var openpayPaymentSave = payment.save;
             openpayPaymentSave.apply(payment);
         };
-//        payment.save = function () {                              
-//            processPayment();
-//        }         
 
         Payment.prototype.save = Payment.prototype.save.wrap(function(save) {                        
-            if (jQuery('#charges_openpay_cc').val() !== 'new' && getPaymentMethod() === "charges") {
+            if (jQuery('#charges_openpay_cc').val() !== 'new' && payment.currentMethod === "charges") {
                 doPayemntWithToken();            
                 return;
             } 
@@ -395,7 +418,7 @@
             var validator = new Validation(this.form);
             if (this.validate() && validator.validate()) {
                 // DO WHAT YOU WANT TO DO BEFORE SAVE                                
-                if(getPaymentMethod() === "charges") {                                             
+                if(payment.currentMethod === "charges") {                                             
                     createOpenpayToken();                    
                 }
                 console.log('THIS WILL CALL CORE SAVE THAT WAS WRAPPED');
@@ -405,19 +428,9 @@
         
     }        
     
-    function getPaymentMethod() {
-        var options = document.getElementsByName('payment[method]');
-        for (var i = 0; i < options.length; i++) {
-            if ($(options[i].id).checked) {
-                return $(options[i].id).value;
-            }
-        }
-        return "";
-    }
-    
     function validateElement(elmId) {
         var elem = document.getElementById(elmId);
-        if(typeof elem !== 'undefined' && elem !== null) {
+        if(typeof elem !== 'undefined' && elem !== null && elem.value !== "") {
           return true;
         }
         return false;
@@ -426,7 +439,7 @@
     if (typeof $ !== 'undefined') {
         (function ($) {
             $('#charges_cc_number').cardNumberInput();
-            if (oneStepFormTwo != null) {
+            if (oneStepFormTwo !== null) {
                 $("#onestepcheckout-button-place-order").attr("onclick", "");
                 $("#onestepcheckout-button-place-order").on("click", oscPlaceOrderOpenpay);
             }

@@ -137,7 +137,7 @@
             <label for="<?php echo $_code ?>_cc_cid" class="required"><em>*</em>Código de seguridad</label>
             <div class="input-box">
                 <div class="v-fix">
-                    <input type="text" class="input-text cvv required-entry validate-cc-cvn" id="<?php echo $_code ?>_cc_cid" name="payment[cc_cid]" value="" />
+                    <input type="text" class="input-text cvv required-entry validate-cc-cvn" id="<?php echo $_code ?>_cc_cid" name="payment[cc_cid]" maxlength="4" />
                 </div>
                 <a href="#" class="cvv-what-is-this"><?php echo $this->__('¿Qué es esto?') ?></a>
             </div>
