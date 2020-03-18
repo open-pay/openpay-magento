@@ -345,7 +345,8 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc 
             'description' => $this->_getHelper()->__($orderFirstItem->getName()) . (($numItems > 1) ? $this->_getHelper()->__('... and (%d) other items', $numItems - 1) : ''),
             'order_id' => $order->getIncrementId(),
             'use_card_points' => $use_card_points,
-            'capture' => $capture
+            'capture' => $capture, 
+            'currency' => strtolower($order->getBaseCurrencyCode())
         );
 
         if ($interest_free > 1) {
@@ -403,7 +404,8 @@ class Openpay_Charges_Model_Method_Openpay extends Mage_Payment_Model_Method_Cc 
             'description' => $this->_getHelper()->__($orderFirstItem->getName()) . (($numItems > 1) ? $this->_getHelper()->__('... and (%d) other items', $numItems - 1) : ''),
             'order_id' => $order->getIncrementId(),
             'use_card_points' => $use_card_points,
-            'capture' => $capture
+            'capture' => $capture,
+            'currency' => strtolower($order->getBaseCurrencyCode())
         );
 
         if ($interest_free > 1) {
