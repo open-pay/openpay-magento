@@ -6,7 +6,7 @@ PHP 5.4 or greater
 
 
 # Supported Version
-- Magento Community Edition 1.9.4.0
+- Magento Community Edition 1.9.4.4
 
 
 # Installation
